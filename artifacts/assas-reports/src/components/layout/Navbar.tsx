@@ -7,8 +7,10 @@ export function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2" data-testid="link-home">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-xl font-black text-primary-foreground shadow-sm">
-              أ
+            <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-md bg-primary text-xl font-black text-primary-foreground shadow-sm ring-1 ring-primary/20">
+              <span className="relative z-10">أ</span>
+              <span className="absolute bottom-2 h-1 w-6 rounded-full bg-secondary" />
+              <span className="absolute left-1 top-1 h-2 w-2 rounded-full bg-secondary" />
             </div>
             <div className="hidden leading-tight sm:block">
               <span className="block text-xl font-black tracking-tight">أساس الإعمار</span>

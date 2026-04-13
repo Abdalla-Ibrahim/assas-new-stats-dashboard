@@ -6,7 +6,11 @@ export function Footer() {
       <div className="container mx-auto grid grid-cols-1 gap-8 px-4 md:grid-cols-4">
         <div className="col-span-1 md:col-span-2">
           <Link href="/" className="mb-4 flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded bg-secondary text-lg font-black text-white">أ</div>
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-primary text-xl font-black text-white shadow-sm">
+              <span className="relative z-10">أ</span>
+              <span className="absolute bottom-2 h-1 w-7 rounded-full bg-secondary" />
+              <span className="absolute left-1 top-1 h-2 w-2 rounded-full bg-secondary" />
+            </div>
             <div>
               <span className="block text-xl font-black text-white">أساس الإعمار</span>
               <span className="text-xs font-bold text-secondary">خبرة تُبنى بثقة</span>

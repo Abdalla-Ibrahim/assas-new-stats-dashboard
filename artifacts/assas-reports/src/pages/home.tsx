@@ -54,6 +54,52 @@ const stats = [
   { value: "جميع المناطق", label: "تغطية داخل المملكة" },
 ];
 
+const visualGallery = [
+  {
+    title: "أسمنت الرياض تشطيب",
+    subtitle: "حلول إسمنتية للمشاريع والتشطيبات",
+    image: "https://mlxjk8kxv4xh.i.optimole.com/w:271/h:271/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2026/01/%D8%A3%D8%B3%D9%85%D9%86%D8%AA-%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6-%D8%AA%D8%B4%D8%B7%D9%8A%D8%A8.jpeg",
+  },
+  {
+    title: "أسمنت بورتلاندي أبيض",
+    subtitle: "منتجات مناسبة لأعمال التشطيب المتقدمة",
+    image: "https://mlxjk8kxv4xh.i.optimole.com/w:271/h:271/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2025/12/riyadh_cement_white.png",
+  },
+  {
+    title: "قطع غيار ومستلزمات",
+    subtitle: "دعم جاهزية المعدات والمركبات",
+    image: "https://mlxjk8kxv4xh.i.optimole.com/w:271/h:271/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2026/01/92191918.jpg",
+  },
+  {
+    title: "تشغيل وسلاسل إمداد",
+    subtitle: "خدمات مساندة للمواقع والمشاريع",
+    image: "https://mlxjk8kxv4xh.i.optimole.com/w:300/h:300/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2026/02/b10c79cc-ce2f-4f99-9dff-5e231e59078b.png",
+  },
+];
+
+const creativeIdeas = [
+  {
+    title: "خريطة تغطية تفاعلية",
+    description: "عرض مسارات التوصيل من الرياض والدمام وحفر الباطن إلى المدن الرئيسية مع مدة تقديرية لكل منطقة.",
+    icon: MapPinned,
+  },
+  {
+    title: "مؤشر جاهزية التوريد",
+    description: "بطاقات يومية توضح توفر الإسمنت المكيس والسائب، الطاقة المتاحة، ومؤشر الطلب حسب المنطقة.",
+    icon: BarChart3,
+  },
+  {
+    title: "بوابة عروض الأسعار",
+    description: "تحويل نموذج التواصل إلى رحلة طلب كاملة: المدينة، الكمية، نوع الإسمنت، وقت التسليم، ثم رقم طلب للمتابعة.",
+    icon: Building2,
+  },
+  {
+    title: "كتالوج مرئي للمنتجات",
+    description: "صفحة صور للمنتجات وقطع الغيار مع تصنيفات واضحة وفلاتر حسب الاستخدام والمدينة.",
+    icon: Factory,
+  },
+];
+
 export default function Home() {
   return (
     <div className="w-full" data-testid="page-home">
@@ -93,8 +139,10 @@ export default function Home() {
                     <p className="text-sm text-slate-300">بطاقة الهوية</p>
                     <h2 className="text-2xl font-black">أساس الإعمار</h2>
                   </div>
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-2xl font-black text-white shadow-lg shadow-secondary/30">
-                    أ
+                  <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-primary text-4xl font-black text-white shadow-lg shadow-secondary/20 ring-4 ring-white/10">
+                    <span className="relative z-10">أ</span>
+                    <span className="absolute bottom-4 h-1.5 w-12 rounded-full bg-secondary" />
+                    <span className="absolute left-3 top-3 h-3 w-3 rounded-full bg-secondary" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -107,6 +155,46 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-950 py-20 text-white">
+        <div className="container mx-auto px-4">
+          <div className="mb-12 grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="rounded-3xl border border-white/10 bg-white p-8 text-slate-950 shadow-2xl">
+              <div className="relative mx-auto mb-6 flex h-36 w-36 items-center justify-center overflow-hidden rounded-3xl bg-primary text-7xl font-black text-white shadow-2xl">
+                <span className="relative z-10">أ</span>
+                <span className="absolute bottom-8 h-3 w-24 rounded-full bg-secondary" />
+                <span className="absolute left-5 top-5 h-5 w-5 rounded-full bg-secondary" />
+                <span className="absolute inset-x-8 bottom-14 h-1 rounded-full bg-white/30" />
+              </div>
+              <p className="text-center text-sm font-bold text-secondary">هوية أساس الإعمار</p>
+              <h2 className="mt-2 text-center text-3xl font-black">شعار حاضر في كل نقطة تواصل</h2>
+              <p className="mt-4 text-center leading-relaxed text-slate-600">
+                تم إدخال الشعار في رأس الموقع والتقارير والتذييل، مع مساحة مرئية يمكن تطويرها لاحقاً كدليل هوية مصغر للألوان والخطوط والاستخدامات.
+              </p>
+            </div>
+            <div>
+              <p className="mb-3 font-bold text-secondary">الشعار والصور</p>
+              <h2 className="mb-4 text-3xl font-black md:text-4xl">صور حقيقية للخدمات والمنتجات بدل الواجهة النصية فقط</h2>
+              <p className="mb-8 max-w-3xl leading-relaxed text-slate-300">
+                أضفت صوراً مرئية مرتبطة بخدمات أساس الإعمار حتى يشعر الزائر بأن الموقع يمثل نشاطاً قائماً: إسمنت، قطع غيار، تشغيل، وتوريد داخل المملكة.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {visualGallery.map((item) => (
+                  <div key={item.title} className="group overflow-hidden rounded-2xl border border-white/10 bg-white/10">
+                    <div className="h-44 overflow-hidden bg-white">
+                      <img src={item.image} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="text-lg font-black">{item.title}</h3>
+                      <p className="mt-1 text-sm text-slate-300">{item.subtitle}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -178,6 +266,34 @@ export default function Home() {
                 </Card>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 py-20">
+        <div className="container mx-auto px-4">
+          <div className="mb-12 max-w-3xl">
+            <p className="mb-3 font-bold text-secondary">أفكار إبداعية إضافية</p>
+            <h2 className="mb-4 text-3xl font-black text-slate-950 md:text-4xl">اقتراحات تجعل الموقع أداة عمل وليس واجهة تعريف فقط</h2>
+            <p className="leading-relaxed text-slate-600">
+              هذه الأفكار وضعتها كقسم جاهز للعرض، ويمكن تحويل أي فكرة منها لاحقاً إلى صفحة كاملة أو نظام تفاعلي مرتبط ببيانات حقيقية.
+            </p>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {creativeIdeas.map((idea) => {
+              const Icon = idea.icon;
+              return (
+                <Card key={idea.title} className="border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="text-lg font-black text-slate-950">{idea.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">{idea.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
