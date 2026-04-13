@@ -7,8 +7,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
+import { Building2, Clock, Mail, MapPin, Send, Truck } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "الاسم يجب أن يكون 3 أحرف على الأقل" }),
@@ -17,6 +18,12 @@ const formSchema = z.object({
   subject: z.string().min(5, { message: "الموضوع مطلوب" }),
   message: z.string().min(10, { message: "الرسالة يجب أن تكون 10 أحرف على الأقل" }),
 });
+
+const locations = [
+  { city: "الرياض", role: "المقر الرئيسي", address: "شارع الصناعة، الرياض — صندوق بريد: 12345" },
+  { city: "الدمام", role: "فرع التوزيع", address: "المنطقة الصناعية، الدمام" },
+  { city: "حفر الباطن", role: "نقطة تشغيل وتغطية", address: "حفر الباطن — صندوق بريد: 12345" },
+];
 
 export default function Contact() {
   const { toast } = useToast();
@@ -33,86 +40,82 @@ export default function Contact() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit() {
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
+    window.setTimeout(() => {
       setIsSubmitting(false);
       toast({
-        title: "تم الإرسال بنجاح",
-        description: "شكراً لتواصلك معنا. سنقوم بالرد عليك في أقرب وقت ممكن.",
+        title: "تم تجهيز الطلب",
+        description: "تم تسجيل بياناتك في نموذج المعاينة، ويمكن ربطه لاحقاً ببريد أو نظام مبيعات رسمي.",
       });
       form.reset();
-    }, 1000);
+    }, 800);
   }
 
   return (
-    <div className="w-full bg-slate-50 min-h-[calc(100vh-4rem-300px)] py-12" data-testid="page-contact">
-      <div className="container mx-auto px-4 max-w-6xl">
-        
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">تواصل معنا</h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            نحن هنا لخدمتك. لا تتردد في التواصل معنا لأي استفسارات حول خدماتنا، طلبات التسعير، أو الشراكات الاستراتيجية.
+    <div className="min-h-[calc(100vh-4rem-300px)] w-full bg-slate-50 py-12" data-testid="page-contact">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="mb-12 rounded-3xl bg-slate-950 p-8 text-white md:p-12">
+          <Badge className="mb-4 bg-secondary text-white hover:bg-secondary">هوية ومقرات أساس</Badge>
+          <h1 className="mb-4 text-3xl font-black md:text-5xl">تواصل مع أساس الإعمار</h1>
+          <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
+            لخدمات الإسمنت، النقل اللوجستي، وقطع الغيار داخل المملكة. هذه الصفحة تجمع مواقع التشغيل ونموذج طلب مناسب لعروض الأسعار والشراكات.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Contact Information */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="border-none shadow-sm bg-primary text-primary-foreground">
+        <div className="mb-8 grid gap-4 md:grid-cols-3">
+          {locations.map((location) => (
+            <Card key={location.city} className="border-slate-200 bg-white shadow-sm">
+              <CardContent className="p-6">
+                <MapPin className="mb-4 h-7 w-7 text-primary" />
+                <h3 className="text-xl font-black text-slate-950">{location.city}</h3>
+                <p className="mt-1 font-bold text-secondary">{location.role}</p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">{location.address}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-1">
+            <Card className="border-none bg-primary text-primary-foreground shadow-sm">
               <CardContent className="p-8">
-                <h3 className="text-xl font-bold mb-6">معلومات التواصل</h3>
-                
+                <h3 className="mb-6 text-xl font-black">معلومات تشغيلية</h3>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="bg-primary-foreground/10 p-3 rounded-full shrink-0">
-                      <MapPin className="w-5 h-5 text-primary-foreground" />
+                    <div className="shrink-0 rounded-full bg-primary-foreground/10 p-3">
+                      <Building2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">المقر الرئيسي</h4>
-                      <p className="text-primary-foreground/80 text-sm leading-relaxed">
-                        طريق الملك فهد، حي الملقا<br />
-                        الرياض، المملكة العربية السعودية
-                      </p>
+                      <h4 className="mb-1 text-lg font-bold">مجالات الخدمة</h4>
+                      <p className="text-sm leading-relaxed text-primary-foreground/80">توريد الإسمنت، النقل اللوجستي، وقطع الغيار.</p>
                     </div>
                   </div>
-
                   <div className="flex items-start gap-4">
-                    <div className="bg-primary-foreground/10 p-3 rounded-full shrink-0">
-                      <Phone className="w-5 h-5 text-primary-foreground" />
+                    <div className="shrink-0 rounded-full bg-primary-foreground/10 p-3">
+                      <Truck className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">الهاتف الموحد</h4>
-                      <p className="text-primary-foreground/80 text-sm font-mono mt-1" dir="ltr">
-                        +966 9200 12345
-                      </p>
+                      <h4 className="mb-1 text-lg font-bold">نطاق التغطية</h4>
+                      <p className="text-sm leading-relaxed text-primary-foreground/80">جميع مناطق ومدن المملكة دون استثناء، مع خدمة للقرى والهجر حسب الإمكانية التشغيلية.</p>
                     </div>
                   </div>
-
                   <div className="flex items-start gap-4">
-                    <div className="bg-primary-foreground/10 p-3 rounded-full shrink-0">
-                      <Mail className="w-5 h-5 text-primary-foreground" />
+                    <div className="shrink-0 rounded-full bg-primary-foreground/10 p-3">
+                      <Clock className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">البريد الإلكتروني</h4>
-                      <p className="text-primary-foreground/80 text-sm font-mono mt-1">
-                        info@assas.com.sa
-                      </p>
+                      <h4 className="mb-1 text-lg font-bold">زمن التوصيل</h4>
+                      <p className="text-sm leading-relaxed text-primary-foreground/80">24-72 ساعة حسب الكمية والموقع الدقيق.</p>
                     </div>
                   </div>
-
                   <div className="flex items-start gap-4">
-                    <div className="bg-primary-foreground/10 p-3 rounded-full shrink-0">
-                      <Clock className="w-5 h-5 text-primary-foreground" />
+                    <div className="shrink-0 rounded-full bg-primary-foreground/10 p-3">
+                      <Mail className="h-5 w-5" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">ساعات العمل</h4>
-                      <p className="text-primary-foreground/80 text-sm leading-relaxed">
-                        الأحد - الخميس: 8:00 صباحاً - 5:00 مساءً<br />
-                        الجمعة - السبت: مغلق
-                      </p>
+                      <h4 className="mb-1 text-lg font-bold">طلبات التواصل</h4>
+                      <p className="text-sm leading-relaxed text-primary-foreground/80">يمكن ربط النموذج لاحقاً بالبريد الرسمي أو نظام إدارة العملاء الخاص بالشركة.</p>
                     </div>
                   </div>
                 </div>
@@ -120,28 +123,23 @@ export default function Contact() {
             </Card>
           </div>
 
-          {/* Contact Form */}
           <div className="lg:col-span-2">
-            <Card className="border-slate-200 shadow-sm">
+            <Card className="border-slate-200 bg-white shadow-sm">
               <CardHeader>
-                <CardTitle>أرسل لنا رسالة</CardTitle>
-                <CardDescription>
-                  املأ النموذج أدناه وسيقوم فريق خدمة العملاء بالتواصل معك في أقرب فرصة.
-                </CardDescription>
+                <CardTitle className="font-black">طلب عرض سعر أو استفسار</CardTitle>
+                <CardDescription>املأ النموذج بطلبك وسيظهر بنفس هوية أساس الإعمار.</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>الاسم الكامل</FormLabel>
-                            <FormControl>
-                              <Input placeholder="أدخل اسمك الكريم" {...field} className="bg-slate-50" />
-                            </FormControl>
+                            <FormControl><Input placeholder="أدخل اسمك الكريم" {...field} className="bg-slate-50" /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -152,25 +150,21 @@ export default function Contact() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>رقم الجوال</FormLabel>
-                            <FormControl>
-                              <Input placeholder="05xxxxxxxx" {...field} className="bg-slate-50 font-mono text-right" dir="ltr" />
-                            </FormControl>
+                            <FormControl><Input placeholder="05xxxxxxxx" {...field} className="bg-slate-50 text-right font-mono" dir="ltr" /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <FormField
                         control={form.control}
                         name="email"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>البريد الإلكتروني</FormLabel>
-                            <FormControl>
-                              <Input placeholder="example@domain.com" {...field} className="bg-slate-50 font-mono text-right" dir="ltr" />
-                            </FormControl>
+                            <FormControl><Input placeholder="example@domain.com" {...field} className="bg-slate-50 text-right font-mono" dir="ltr" /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -181,9 +175,7 @@ export default function Contact() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>الموضوع</FormLabel>
-                            <FormControl>
-                              <Input placeholder="عنوان رسالتك" {...field} className="bg-slate-50" />
-                            </FormControl>
+                            <FormControl><Input placeholder="مثال: طلب توريد إسمنت للرياض" {...field} className="bg-slate-50" /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -195,13 +187,9 @@ export default function Contact() {
                       name="message"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>الرسالة</FormLabel>
+                          <FormLabel>تفاصيل الطلب</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="اكتب تفاصيل رسالتك هنا..." 
-                              className="min-h-[150px] resize-y bg-slate-50" 
-                              {...field} 
-                            />
+                            <Textarea placeholder="اكتب الكمية، المدينة، نوع الخدمة، والموعد المطلوب..." className="min-h-[150px] resize-y bg-slate-50" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -209,21 +197,13 @@ export default function Contact() {
                     />
 
                     <Button type="submit" size="lg" className="w-full md:w-auto" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        "جاري الإرسال..."
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4 ml-2" />
-                          إرسال الرسالة
-                        </>
-                      )}
+                      {isSubmitting ? "جاري التجهيز..." : <><Send className="ml-2 h-4 w-4" /> إرسال الطلب</>}
                     </Button>
                   </form>
                 </Form>
               </CardContent>
             </Card>
           </div>
-
         </div>
       </div>
     </div>
