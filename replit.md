@@ -4,6 +4,12 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## Current Artifacts
+
+- **API Server** (`artifacts/api-server`) — shared Express API service at `/api`.
+- **أساس الإعمار - صفحات التقارير** (`artifacts/assas-reports`) — Arabic RTL React/Vite website at `/` with landing page, reports hub, full cement statistics report page, and contact page.
+- **Canvas** (`artifacts/mockup-sandbox`) — design/mockup preview sandbox.
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
@@ -11,6 +17,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
 - **API framework**: Express 5
+- **Frontend**: React + Vite + Tailwind CSS
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)

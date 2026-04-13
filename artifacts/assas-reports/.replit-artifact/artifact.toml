@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "أساس الإعمار - صفحات التقارير"
+version = "1.0.0"
+id = "artifacts/assas-reports"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23466
+
+[services.development]
+run = "pnpm --filter @workspace/assas-reports run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/assas-reports", "run", "build" ]
+publicDir = "artifacts/assas-reports/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23466"
+BASE_PATH = "/"
