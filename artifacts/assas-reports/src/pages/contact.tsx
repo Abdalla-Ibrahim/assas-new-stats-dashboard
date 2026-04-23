@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Clock, Mail, MapPin, Send, Truck } from "lucide-react";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import officeImage from "@assets/Gemini_Generated_Image_rid8qnrid8qnrid8_1776938760079.png";
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "الاسم يجب أن يكون 3 أحرف على الأقل" }),
@@ -55,18 +57,18 @@ export default function Contact() {
   return (
     <div className="min-h-[calc(100vh-4rem-300px)] w-full bg-slate-50 py-12" data-testid="page-contact">
       <div className="container mx-auto max-w-6xl px-4">
-        <div className="mb-12 grid items-center gap-8 rounded-3xl bg-slate-950 p-8 text-white md:grid-cols-[1fr_auto] md:p-12">
-          <div>
+        <div className="relative mb-12 grid items-center gap-8 overflow-hidden rounded-3xl bg-slate-950 p-8 text-white md:grid-cols-[1fr_auto] md:p-12">
+          <div className="absolute inset-0 bg-cover bg-center opacity-25" style={{ backgroundImage: `url(${officeImage})` }} />
+          <div className="absolute inset-0 bg-gradient-to-l from-slate-950 via-slate-950/95 to-slate-950/60" />
+          <div className="relative">
             <Badge className="mb-4 bg-secondary text-white hover:bg-secondary">هوية ومقرات أساس</Badge>
             <h1 className="mb-4 text-3xl font-black md:text-5xl">تواصل مع أساس الإعمار</h1>
             <p className="max-w-3xl text-lg leading-relaxed text-slate-300">
               لخدمات الإسمنت، النقل اللوجستي، وقطع الغيار داخل المملكة. هذه الصفحة تجمع مواقع التشغيل ونموذج طلب مناسب لعروض الأسعار والشراكات.
             </p>
           </div>
-          <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-3xl bg-white text-7xl font-black text-primary shadow-2xl">
-            <span className="relative z-10">أ</span>
-            <span className="absolute bottom-7 h-3 w-20 rounded-full bg-secondary" />
-            <span className="absolute left-5 top-5 h-4 w-4 rounded-full bg-secondary" />
+          <div className="relative flex h-36 w-36 items-center justify-center rounded-3xl bg-white p-3 shadow-2xl">
+            <BrandLogo size={120} />
           </div>
         </div>
 

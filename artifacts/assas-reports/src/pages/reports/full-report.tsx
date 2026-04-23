@@ -48,10 +48,15 @@ const REPORT_TYPES = [
   "الحصة السوقية",
 ];
 
+import officeImage from "@assets/Gemini_Generated_Image_rid8qnrid8qnrid8_1776938760079.png";
+import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
+import truckSide from "@assets/Gemini_Generated_Image_jzlp98jzlp98jzlp_1776938787666.png";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+
 const reportImages = [
-  "https://mlxjk8kxv4xh.i.optimole.com/w:271/h:271/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2026/01/%D8%A3%D8%B3%D9%85%D9%86%D8%AA-%D8%A7%D9%84%D8%B1%D9%8A%D8%A7%D8%B6-%D8%AA%D8%B4%D8%B7%D9%8A%D8%A8.jpeg",
-  "https://mlxjk8kxv4xh.i.optimole.com/w:271/h:271/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2025/12/riyadh_cement_white.png",
-  "https://mlxjk8kxv4xh.i.optimole.com/w:271/h:271/q:mauto/f:best/https://assasalamar.com/wp-content/uploads/2026/01/92456750.jpeg",
+  { src: officeImage, label: "مقر أساس الإعمار" },
+  { src: truckFront, label: "أسطول الصهاريج" },
+  { src: truckSide, label: "تشغيل لوجستي" },
 ];
 
 const companyRows = [
@@ -149,10 +154,8 @@ export default function FullReport() {
       <div className="container mx-auto px-4">
         <div className="mb-8 overflow-hidden rounded-3xl bg-slate-950 text-white">
           <div className="grid gap-6 p-8 md:grid-cols-[auto_1fr_auto] md:p-10">
-            <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl bg-white text-5xl font-black text-primary shadow-xl">
-              <span className="relative z-10">أ</span>
-              <span className="absolute bottom-5 h-2 w-14 rounded-full bg-secondary" />
-              <span className="absolute left-4 top-4 h-3 w-3 rounded-full bg-secondary" />
+            <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-white p-2 shadow-xl">
+              <BrandLogo size={80} />
             </div>
             <div>
               <Badge className="mb-4 bg-secondary text-white hover:bg-secondary">هوية أساس الإعمار للتقارير</Badge>
@@ -487,9 +490,10 @@ export default function FullReport() {
                 </CardHeader>
                 <CardContent>
                   <div className="mb-6 grid gap-4 md:grid-cols-3">
-                    {reportImages.map((image, index) => (
-                      <div key={image} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                        <img src={image} alt={`صورة من خدمات أساس ${index + 1}`} className="h-36 w-full object-cover" />
+                    {reportImages.map((image) => (
+                      <div key={image.label} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                        <img src={image.src} alt={image.label} className="h-44 w-full object-cover" />
+                        <p className="border-t border-slate-200 bg-white px-3 py-2 text-center text-xs font-bold text-slate-700">{image.label}</p>
                       </div>
                     ))}
                   </div>

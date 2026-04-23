@@ -1,18 +1,17 @@
 import { Link } from "wouter";
+import { BrandLogo } from "@/components/brand/BrandLogo";
 
 export function Footer() {
   return (
-    <footer className="mt-auto bg-slate-950 py-12 text-slate-200" data-testid="footer-main">
+    <footer className="mt-auto bg-slate-950 py-14 text-slate-200" data-testid="footer-main">
       <div className="container mx-auto grid grid-cols-1 gap-8 px-4 md:grid-cols-4">
         <div className="col-span-1 md:col-span-2">
-          <Link href="/" className="mb-4 flex items-center gap-2">
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg bg-primary text-xl font-black text-white shadow-sm">
-              <span className="relative z-10">أ</span>
-              <span className="absolute bottom-2 h-1 w-7 rounded-full bg-secondary" />
-              <span className="absolute left-1 top-1 h-2 w-2 rounded-full bg-secondary" />
+          <Link href="/" className="mb-5 flex items-center gap-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white p-2 shadow-lg">
+              <BrandLogo size={48} />
             </div>
             <div>
-              <span className="block text-xl font-black text-white">أساس الإعمار</span>
+              <span className="block text-xl font-black text-white">شركة أساس الإعمار</span>
               <span className="text-xs font-bold text-secondary">خبرة تُبنى بثقة</span>
             </div>
           </Link>
