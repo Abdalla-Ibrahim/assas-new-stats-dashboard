@@ -1,0 +1,197 @@
+import { useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Truck, MapPin, Package, Calculator, Clock, Banknote } from "lucide-react";
+
+const ORIGINS = [
+  { id: "riyadh", name: "الرياض (المقر الرئيسي)" },
+  { id: "dammam", name: "الدمام (فرع التوزيع)" },
+  { id: "hafr", name: "حفر الباطن" },
+];
+
+const DESTINATIONS: Record<string, { name: string; baseDistance: Record<string, number> }> = {
+  jeddah: { name: "جدة", baseDistance: { riyadh: 950, dammam: 1340, hafr: 1180 } },
+  makkah: { name: "مكة المكرمة", baseDistance: { riyadh: 870, dammam: 1260, hafr: 1100 } },
+  madinah: { name: "المدينة المنورة", baseDistance: { riyadh: 850, dammam: 1240, hafr: 1080 } },
+  taif: { name: "الطائف", baseDistance: { riyadh: 780, dammam: 1170, hafr: 1010 } },
+  abha: { name: "أبها", baseDistance: { riyadh: 1080, dammam: 1490, hafr: 1320 } },
+  tabuk: { name: "تبوك", baseDistance: { riyadh: 1280, dammam: 1670, hafr: 1450 } },
+  qassim: { name: "القصيم (بريدة)", baseDistance: { riyadh: 330, dammam: 720, hafr: 540 } },
+  hail: { name: "حائل", baseDistance: { riyadh: 640, dammam: 1030, hafr: 800 } },
+  jazan: { name: "جازان", baseDistance: { riyadh: 1280, dammam: 1690, hafr: 1520 } },
+  najran: { name: "نجران", baseDistance: { riyadh: 1130, dammam: 1380, hafr: 1230 } },
+  riyadhCity: { name: "داخل الرياض", baseDistance: { riyadh: 30, dammam: 410, hafr: 480 } },
+  dammamCity: { name: "داخل الدمام", baseDistance: { riyadh: 410, dammam: 30, hafr: 270 } },
+};
+
+const TRUCK_TYPES = [
+  { id: "tanker", name: "صهريج إسمنت سائب (40 طن)", capacity: 40, ratePerKm: 4.2, fixed: 250 },
+  { id: "trailer", name: "مقطورة كيس إسمنت (35 طن)", capacity: 35, ratePerKm: 3.8, fixed: 200 },
+  { id: "small", name: "شاحنة صغيرة (10 طن)", capacity: 10, ratePerKm: 2.4, fixed: 120 },
+];
+
+const URGENCY = [
+  { id: "standard", name: "قياسي (48-72 ساعة)", multiplier: 1.0 },
+  { id: "express", name: "سريع (24-48 ساعة)", multiplier: 1.25 },
+  { id: "urgent", name: "عاجل (خلال 24 ساعة)", multiplier: 1.55 },
+];
+
+const formatSAR = (n: number) => new Intl.NumberFormat("ar-SA", { maximumFractionDigits: 0 }).format(n);
+
+export function ShippingCalculator() {
+  const [origin, setOrigin] = useState("riyadh");
+  const [destination, setDestination] = useState("jeddah");
+  const [tons, setTons] = useState(40);
+  const [truck, setTruck] = useState("tanker");
+  const [urgency, setUrgency] = useState("standard");
+
+  const result = useMemo(() => {
+    const dist = DESTINATIONS[destination].baseDistance[origin];
+    const t = TRUCK_TYPES.find((x) => x.id === truck)!;
+    const u = URGENCY.find((x) => x.id === urgency)!;
+    const tripsNeeded = Math.max(1, Math.ceil(tons / t.capacity));
+    const baseCost = (dist * t.ratePerKm + t.fixed) * tripsNeeded;
+    const total = Math.round(baseCost * u.multiplier);
+    const perTon = Math.round(total / tons);
+    const days = u.id === "urgent" ? 1 : u.id === "express" ? 2 : 3;
+    const co2 = Math.round(dist * tripsNeeded * 0.92);
+    return { dist, tripsNeeded, total, perTon, days, co2 };
+  }, [origin, destination, tons, truck, urgency]);
+
+  return (
+    <Card className="overflow-hidden border-slate-200 bg-white shadow-2xl">
+      <div className="bg-gradient-to-l from-primary via-primary to-primary/80 p-6 text-white">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary/20 text-secondary">
+            <Calculator className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-secondary">حاسبة شحن الإسمنت</p>
+            <h3 className="text-2xl font-black">احسب تكلفة الشحن من نقطة لأخرى داخل المملكة</h3>
+          </div>
+        </div>
+      </div>
+      <CardContent className="grid gap-6 p-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+                <MapPin className="h-3.5 w-3.5 text-primary" /> نقطة الانطلاق
+              </Label>
+              <Select value={origin} onValueChange={setOrigin}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {ORIGINS.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+                <MapPin className="h-3.5 w-3.5 text-secondary" /> الوجهة
+              </Label>
+              <Select value={destination} onValueChange={setDestination}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(DESTINATIONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+              <Package className="h-3.5 w-3.5 text-primary" /> الكمية بالطن: <span className="font-black text-secondary">{tons}</span>
+            </Label>
+            <Input
+              type="range"
+              min={5}
+              max={400}
+              step={5}
+              value={tons}
+              onChange={(e) => setTons(Number(e.target.value))}
+              className="cursor-pointer accent-secondary"
+            />
+            <div className="mt-1 flex justify-between text-[11px] text-slate-500">
+              <span>5 طن</span><span>200 طن</span><span>400 طن</span>
+            </div>
+          </div>
+
+          <div>
+            <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+              <Truck className="h-3.5 w-3.5 text-primary" /> نوع الشاحنة
+            </Label>
+            <Select value={truck} onValueChange={setTruck}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {TRUCK_TYPES.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+              <Clock className="h-3.5 w-3.5 text-primary" /> سرعة التوصيل
+            </Label>
+            <div className="grid grid-cols-3 gap-2">
+              {URGENCY.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => setUrgency(u.id)}
+                  className={`rounded-xl border p-3 text-right text-xs font-bold transition-all ${
+                    urgency === u.id
+                      ? "border-secondary bg-secondary/10 text-primary shadow-md"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-secondary/40"
+                  }`}
+                >
+                  {u.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-primary p-6 text-white shadow-inner">
+          <p className="text-xs font-bold text-secondary">عرض السعر التقديري</p>
+          <div className="mt-3 flex items-end gap-2">
+            <p className="text-5xl font-black leading-none text-white">{formatSAR(result.total)}</p>
+            <p className="mb-1.5 text-lg font-bold text-secondary">ريال</p>
+          </div>
+          <p className="mt-1 text-xs text-white/60">شامل الوقود والسائق والرسوم التشغيلية الأساسية</p>
+
+          <div className="mt-5 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold text-white/60">المسافة</p>
+              <p className="text-xl font-black text-white">{formatSAR(result.dist)} كم</p>
+            </div>
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold text-white/60">عدد الرحلات</p>
+              <p className="text-xl font-black text-white">{result.tripsNeeded}</p>
+            </div>
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold text-white/60">تكلفة الطن</p>
+              <p className="text-xl font-black text-secondary">{formatSAR(result.perTon)} ريال</p>
+            </div>
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold text-white/60">مدة التوصيل</p>
+              <p className="text-xl font-black text-white">{result.days} يوم</p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-secondary/30 bg-secondary/10 p-3">
+            <Banknote className="h-5 w-5 text-secondary" />
+            <p className="text-xs leading-relaxed text-white/85">
+              تقدير ~{formatSAR(result.co2)} كجم CO₂ — يمكن تخفيضها بدمج الرحلات أو اختيار الشاحنة الأكبر.
+            </p>
+          </div>
+
+          <Button className="mt-5 w-full bg-secondary font-black text-secondary-foreground shadow-lg hover:bg-secondary/90">
+            تثبيت العرض وطلب التواصل
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

@@ -15,6 +15,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import { SaudiMap } from "@/components/analytics/SaudiMap";
+import { ShippingCalculator } from "@/components/analytics/ShippingCalculator";
+import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
 
 import officeImage from "@assets/Gemini_Generated_Image_rid8qnrid8qnrid8_1776938760079.png";
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
@@ -217,6 +220,59 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* INTERACTIVE SAUDI MAP */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white py-20">
+        <div className="absolute -left-20 top-10 h-72 w-72 rounded-full bg-secondary/10 blur-3xl" />
+        <div className="absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="container relative mx-auto px-4">
+          <div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
+            <div className="max-w-2xl">
+              <p className="mb-3 font-bold text-secondary">الخريطة التفاعلية</p>
+              <h2 className="mb-3 text-4xl font-black md:text-5xl">
+                <span className="text-gradient-navy">توزيع شركات الإسمنت</span> على مناطق المملكة
+              </h2>
+              <p className="leading-relaxed text-slate-600">
+                اضغط على أي منطقة لعرض إجمالي مبيعاتها، الشركة الأعلى مبيعاً، وترتيب الشركات الأربع الأولى مع نسبة كل شركة. النقاط الذهبية المتحركة تمثّل مقرات أساس الإعمار.
+              </p>
+            </div>
+          </div>
+          <SaudiMap />
+        </div>
+      </section>
+
+      {/* SHIPPING CALCULATOR */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-white to-slate-100 py-20">
+        <div className="container mx-auto px-4">
+          <div className="mb-10 max-w-2xl">
+            <p className="mb-3 font-bold text-secondary">حاسبة الشحن</p>
+            <h2 className="mb-3 text-4xl font-black md:text-5xl">
+              <span className="text-gradient-navy">اعرف تكلفة شحن الإسمنت</span> قبل أن تطلب
+            </h2>
+            <p className="leading-relaxed text-slate-600">
+              اختر نقطة الانطلاق، الوجهة داخل المملكة، نوع الشاحنة، الكمية وسرعة التوصيل لاحتساب تكلفة تقديرية فورية شاملة الكلفة لكل طن، وعدد الرحلات، ومدة التوصيل.
+            </p>
+          </div>
+          <ShippingCalculator />
+        </div>
+      </section>
+
+      {/* ADVANCED ANALYTICS */}
+      <section className="relative overflow-hidden bg-slate-950 py-20 text-white">
+        <div className="absolute inset-0 pattern-grid opacity-50" />
+        <div className="container relative mx-auto px-4">
+          <div className="mb-10 max-w-2xl">
+            <p className="mb-3 font-bold text-secondary">التحليلات المتقدمة</p>
+            <h2 className="mb-3 text-4xl font-black md:text-5xl">
+              مقارنات <span className="text-gradient-gold">متعددة الأبعاد</span> بين شركات الإسمنت
+            </h2>
+            <p className="leading-relaxed text-slate-300">
+              لوحة قيادة متكاملة: بطاقة أداء بالـRadar، الحصة السوقية بشكل دائري، تطور المبيعات الشهري، ومؤشر النمو والكفاءة.
+            </p>
+          </div>
+          <AdvancedAnalytics />
         </div>
       </section>
 

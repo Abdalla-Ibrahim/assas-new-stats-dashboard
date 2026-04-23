@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Cairo:wght@400;600;700;800;900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -82,11 +82,11 @@
   --popover-foreground: 215 30% 15%;
   --popover-border: 215 20% 90%;
 
-  --primary: 215 100% 25%; /* Deep Blue #004080 */
+  --primary: 222 70% 28%; /* Deep Royal Navy from logo */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 30 100% 50%; /* Construction Orange #FF8000 */
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 42 90% 52%; /* Golden amber from logo */
+  --secondary-foreground: 222 70% 15%;
 
   --muted: 215 20% 95%;
   --muted-foreground: 215 15% 45%;
@@ -100,7 +100,7 @@
   --input: 215 20% 90%;
   --ring: 215 100% 25%;
 
-  --app-font-sans: 'Tajawal', sans-serif;
+  --app-font-sans: 'Cairo', 'Tajawal', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
   --radius: 0.25rem;
@@ -177,5 +177,29 @@
     content: attr(data-placeholder);
     color: hsl(var(--muted-foreground));
     pointer-events: none;
+  }
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #f5b800 0%, #fde68a 50%, #f5b800 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-navy {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b5bb8 50%, #1e3a8a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .pattern-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 }
