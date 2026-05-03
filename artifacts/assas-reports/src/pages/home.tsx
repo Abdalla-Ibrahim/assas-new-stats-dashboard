@@ -222,9 +222,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════
-          STATS BAND
-      ═══════════════════════════════════════════════════════ */}
       <section className="border-y border-secondary/20 bg-slate-900 py-6">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-around gap-6 text-center">

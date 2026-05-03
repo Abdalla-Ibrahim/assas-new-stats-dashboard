@@ -189,7 +189,7 @@ export function SaudiMap() {
 
           {/* SVG MAP */}
           <div className="relative w-full overflow-hidden rounded-2xl" style={{ background: "#0a0f1e" }}>
-            <svg viewBox="0 0 800 640" className="w-full" style={{ maxHeight: 480 }}>
+            <svg viewBox="0 0 900 720" className="w-full" style={{ maxHeight: 520 }}>
               <defs>
                 <filter id="glow">
                   <feGaussianBlur stdDeviation="4" result="coloredBlur" />
@@ -208,7 +208,20 @@ export function SaudiMap() {
               </defs>
 
               {/* Background */}
-              <rect width="800" height="640" fill="#0a0f1e" />
+              <rect width="900" height="720" fill="#0a0f1e" />
+              <path
+                d="M182 102 L240 58 L360 22 L442 38 L524 28 L618 68 L684 126 L736 202 L752 286 L744 372 L708 456 L652 520 L584 586 L498 640 L396 666 L298 654 L222 620 L156 562 L120 492 L102 412 L114 322 L136 236 Z"
+                fill="none"
+                stroke="rgba(245,184,0,0.28)"
+                strokeWidth="3"
+                strokeDasharray="10 10"
+              />
+              <path
+                d="M170 126 L226 76 L320 44 L416 56 L512 44 L592 78 L650 136 L692 208 L704 292 L694 372 L664 448 L618 508 L554 566 L472 612 L386 634 L300 622 L224 586 L172 530 L142 464 L132 388 L140 312 L154 236 Z"
+                fill="none"
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth="2"
+              />
 
               {/* Regions */}
               {REGIONS.map((region) => {
