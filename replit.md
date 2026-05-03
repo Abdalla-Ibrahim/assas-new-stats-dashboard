@@ -7,18 +7,46 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 ## Current Artifacts
 
 - **API Server** (`artifacts/api-server`) — shared Express API service at `/api`.
-- **أساس الإعمار - صفحات التقارير** (`artifacts/assas-reports`) — Arabic RTL React/Vite website at `/` with landing page, reports hub, detailed cement/statistics report page, and contact/locations page.
+- **أساس الإعمار - صفحات التقارير** (`artifacts/assas-reports`) — Arabic RTL React/Vite website at `/` for cement supply company.
 - **Canvas** (`artifacts/mockup-sandbox`) — design/mockup preview sandbox.
 
 ## Assas Reports Artifact
 
-The `artifacts/assas-reports` app is an Arabic RTL website for أساس الإعمار with Tajawal typography and deep blue/orange branding. It now includes:
+The `artifacts/assas-reports` app is an Arabic RTL website for **أساس الإعمار التجارية** — a Saudi cement supply company. Dark/navy + gold visual system. Key features:
 
-- Homepage with prominent أساس الإعمار identity, slogan, operating statistics, services, leadership context, locations, and nationwide coverage.
-- Reports hub listing detailed report categories for cement company sales, local/export sales, clinker inventory, monthly company sales, market share, financial reports, sustainability, and Assas identity/locations.
-- Full report page modeled after cement statistics report flows, with filters for first/second year, month, region, and report type, plus tabs for company sales, period comparison, monthly sales, clinker movements, market share, and Assas identity/locations.
-- Contact page with verified operating locations from the public Assas site: Riyadh main office, Dammam distribution branch, and Hafar Al-Batin operating point, plus a request/inquiry form.
-- Static Arabic data for report tables and charts; no backend or database is currently used by this artifact.
+### Pages & Sections
+- **Home page** (`/`) with:
+  - Live animated ticker for cement company stock prices
+  - Hero: "مؤشر سعر الاسمنت السعودي" + "شركة أساس الإعمار التجارية"
+  - Stats band (actual min price 13.10 ريال, 13 ريال average)
+  - Price comparison table sorted by bag price with visual color bars (green/amber/red)
+  - **PriceInsights section** — rich charts: horizontal bar chart of all 16 companies by bag price, bulk price bar chart, delta-from-average table, and price trend 2020–2025
+  - Visual gallery, services (cement supply only — no logistics/spare parts)
+  - Saudi map with interactive regions
+  - Shipping calculator
+  - Advanced Analytics (5 tabs)
+  - Identity/locations, CTA
+
+- **Full Report** (`/reports/full-report`) with:
+  - Filters (year, month, region, report type)
+  - KPI cards (total sales, local, export, production, clinker inventory)
+  - Tabs: مبيعات الشركات, المبيعات خلال فترة, المبيعات الشهرية, الكلنكر, **مقارنة الأسعار** (new — with charts from CEMENT_FACTORIES), الحصة السوقية, هوية أساس
+
+- **Reports hub** (`/reports`) listing report categories
+- **Contact** (`/contact`) page
+
+### Data
+- `src/data/cementFactories.ts` — 16 Saudi cement factories with realistic price spread:
+  - Bag prices range 13.10 ريال (السعودية/حفر الباطن) → 16.40 ريال (العلا)
+  - Bulk prices range 267 → 330 ريال/ton
+  - Market share, production, capacity, stock price/change, color per factory
+
+### Analytics Components
+- `SaudiMap.tsx` — geographically accurate SVG map (viewBox 0 0 820 680), 13 regions, factory pins, utilization badge
+- `AdvancedAnalytics.tsx` — 5 tabbed sections (overview/production/prices/market/quarterly) using Recharts
+- `PriceInsights.tsx` — standalone price comparison section with 4 charts + delta table (new)
+- `ShippingCalculator.tsx` — shipping cost estimator
+- `CementPriceTicker.tsx` — live animated price ticker
 
 ## Stack
 
@@ -27,11 +55,15 @@ The `artifacts/assas-reports` app is an Arabic RTL website for أساس الإع
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
 - **API framework**: Express 5
-- **Frontend**: React + Vite + Tailwind CSS
+- **Frontend**: React + Vite + Tailwind CSS, RTL
+- **Charts**: Recharts
+- **Routing**: wouter
+- **UI**: shadcn-style components
 - **Database**: PostgreSQL + Drizzle ORM
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **Fonts**: Cairo, Tajawal (Google Fonts)
 
 ## Key Commands
 

@@ -21,6 +21,8 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SaudiMap } from "@/components/analytics/SaudiMap";
 import { ShippingCalculator } from "@/components/analytics/ShippingCalculator";
 import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
+import { PriceInsights } from "@/components/analytics/PriceInsights";
+import { MarketIntelligence } from "@/components/analytics/MarketIntelligence";
 import { CementPriceTicker } from "@/components/CementPriceTicker";
 import { CEMENT_FACTORIES } from "@/data/cementFactories";
 
@@ -226,7 +228,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-around gap-6 text-center">
             {[
-              { val: `${(minBagPrice - 3).toFixed(0)} ريال`, label: "أقل سعر كيس" },
+              { val: `${minBagPrice.toFixed(2)} ريال`, label: "أقل سعر كيس" },
               { val: "13 ريال", label: "متوسط سعر الكيس" },
               { val: `${maxShare.toFixed(1)}%`, label: "أعلى حصة سوقية" },
               { val: `${CEMENT_FACTORIES.length} مصنع`, label: "المصانع المُراقبة" },
@@ -272,7 +274,7 @@ export default function Home() {
           {/* Summary cards */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "أقل سعر للكيس", value: `${(minBagPrice - 2).toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
+              { label: "أقل سعر للكيس", value: `${minBagPrice.toFixed(2)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
               { label: "متوسط سعر الكيس", value: "13 ريال", sub: "مرجع تسعيري تقريبي", color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
               { label: "أعلى حصة سوقية", value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
               { label: "إجمالي المصانع", value: `${CEMENT_FACTORIES.length} مصنع`, sub: "مدرجة في تداول", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
@@ -286,64 +288,95 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Table */}
+          {/* Table — sorted by bag price ascending */}
           <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-2xl">
             <div className="overflow-x-auto">
-              <table className="w-full text-right">
-                <thead>
-                  <tr className="bg-slate-950 text-white">
-                    <th className="px-5 py-4 text-sm font-black">#</th>
-                    <th className="px-5 py-4 text-sm font-black">المصنع</th>
-                    <th className="px-5 py-4 text-sm font-black">الرمز</th>
-                    <th className="px-5 py-4 text-sm font-black">المنطقة</th>
-                    <th className="px-5 py-4 text-sm font-black">سعر الكيس</th>
-                    <th className="px-5 py-4 text-sm font-black">سعر الطن</th>
-                    <th className="px-5 py-4 text-sm font-black">سعر السهم</th>
-                    <th className="px-5 py-4 text-sm font-black">الحصة %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {CEMENT_FACTORIES.map((f, i) => (
-                    <tr
-                      key={f.id}
-                      className={`border-t border-slate-100 transition-colors hover:bg-slate-50 ${i % 2 === 0 ? "" : "bg-slate-50/50"}`}
-                    >
-                      <td className="px-5 py-3.5 text-sm font-bold text-slate-400">{i + 1}</td>
-                      <td className="px-5 py-3.5">
-                        <span className="flex items-center gap-2 font-black text-slate-900">
-                          <span className="h-3 w-3 rounded-full shrink-0" style={{ background: f.color }} />
-                          {f.name}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-600">{f.symbol}</span>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
-                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bagPrice} ريال</td>
-                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} ريال</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                          {formatSAR2(f.stockPrice)}
-                          <span className="mr-1 text-xs opacity-80">
-                            ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
-                          </span>
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${(f.marketShare / 16) * 100}%`, background: f.color }}
-                            />
-                          </div>
-                          <span className="text-xs font-bold text-slate-700">{f.marketShare}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {(() => {
+                const sortedByPrice = [...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice);
+                const priceMin = sortedByPrice[0].bagPrice;
+                const priceMax = sortedByPrice[sortedByPrice.length - 1].bagPrice;
+                const priceRange = priceMax - priceMin;
+                const priceColor = (p: number) =>
+                  p <= 13 + 0.5 ? "#10b981" : p <= 13 + 2 ? "#f59e0b" : "#ef4444";
+                return (
+                  <table className="w-full text-right">
+                    <thead>
+                      <tr className="bg-slate-950 text-white">
+                        <th className="px-5 py-4 text-sm font-black">#</th>
+                        <th className="px-5 py-4 text-sm font-black">المصنع</th>
+                        <th className="px-5 py-4 text-sm font-black">الرمز</th>
+                        <th className="px-5 py-4 text-sm font-black">المنطقة</th>
+                        <th className="px-5 py-4 text-sm font-black">سعر الكيس</th>
+                        <th className="px-5 py-4 text-sm font-black min-w-[160px]">شريط السعر</th>
+                        <th className="px-5 py-4 text-sm font-black">سعر الطن</th>
+                        <th className="px-5 py-4 text-sm font-black">سعر السهم</th>
+                        <th className="px-5 py-4 text-sm font-black">الحصة %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedByPrice.map((f, i) => {
+                        const barWidth = priceRange > 0 ? ((f.bagPrice - priceMin) / priceRange) * 100 : 50;
+                        const color = priceColor(f.bagPrice);
+                        return (
+                          <tr
+                            key={f.id}
+                            className={`border-t border-slate-100 transition-colors hover:bg-slate-50 ${i % 2 === 0 ? "" : "bg-slate-50/50"}`}
+                          >
+                            <td className="px-5 py-3.5 text-sm font-bold text-slate-400">{i + 1}</td>
+                            <td className="px-5 py-3.5">
+                              <span className="flex items-center gap-2 font-black text-slate-900">
+                                <span className="h-3 w-3 rounded-full shrink-0" style={{ background: f.color }} />
+                                {f.name}
+                              </span>
+                            </td>
+                            <td className="px-5 py-3.5">
+                              <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-600">{f.symbol}</span>
+                            </td>
+                            <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
+                            <td className="px-5 py-3.5">
+                              <span className="font-black text-lg" style={{ color }}>{f.bagPrice.toFixed(2)}</span>
+                              <span className="text-xs text-slate-500 mr-1">ريال</span>
+                            </td>
+                            <td className="px-5 py-3.5">
+                              <div className="flex items-center gap-2">
+                                <div className="relative h-3 w-32 overflow-hidden rounded-full bg-slate-100">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{ width: `${Math.max(8, barWidth)}%`, background: color }}
+                                  />
+                                </div>
+                                <span className="text-[10px] font-bold" style={{ color }}>
+                                  {f.bagPrice <= 13 + 0.5 ? "الأرخص" : f.bagPrice >= 16 ? "الأغلى" : ""}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} ريال</td>
+                            <td className="px-5 py-3.5">
+                              <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                                {formatSAR2(f.stockPrice)}
+                                <span className="mr-1 text-xs opacity-80">
+                                  ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
+                                </span>
+                              </span>
+                            </td>
+                            <td className="px-5 py-3.5">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-100">
+                                  <div
+                                    className="h-full rounded-full transition-all duration-500"
+                                    style={{ width: `${(f.marketShare / 16) * 100}%`, background: f.color }}
+                                  />
+                                </div>
+                                <span className="text-xs font-bold text-slate-700">{f.marketShare}%</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                );
+              })()}
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 text-xs text-slate-500">
               <span>الأسعار تقديرية لأغراض المقارنة فقط، وقد تتغير حسب المنطقة والكمية ومدة التعاقد.</span>
@@ -353,6 +386,44 @@ export default function Home() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          PRICE INSIGHTS — VISUAL COMPARISON
+      ═══════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 to-slate-900 py-24">
+        <div className="absolute inset-0 pattern-dots opacity-15" />
+        <div className="absolute right-0 top-0 h-full w-px bg-gradient-to-b from-transparent via-secondary/30 to-transparent" />
+        <div className="container relative mx-auto px-4">
+          <div className="mb-12 max-w-2xl">
+            <div className="section-label mb-3">تحليل الأسعار</div>
+            <h2 className="mb-4 text-4xl font-black text-white md:text-5xl">
+              مقارنة الأسعار <span className="text-gradient-gold">بصرياً وتحليلياً</span>
+            </h2>
+            <p className="leading-relaxed text-slate-400">
+              رسوم بيانية تفاعلية لسعر الكيس والطن السائب لدى جميع الشركات، مع الفارق عن المتوسط واتجاه الأسعار من 2020 إلى 2025.
+            </p>
+          </div>
+          <PriceInsights />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+          MARKET INTELLIGENCE
+      ═══════════════════════════════════════════════════════ */}
+      <section className="py-24" style={{ background: "linear-gradient(180deg,#070c1a 0%,#0a0f1e 100%)" }}>
+        <div className="container mx-auto px-4">
+          <div className="mb-12">
+            <div className="section-label mb-3">مؤشرات مباشرة</div>
+            <h2 className="mb-4 text-4xl font-black text-white md:text-5xl">
+              ذكاء السوق <span className="text-gradient-gold">وفرص التوريد</span>
+            </h2>
+            <p className="max-w-2xl leading-relaxed text-slate-400">
+              درجة تحليل مجمعة من السعر التنافسي وكفاءة الإنتاج والحصة السوقية — تساعدك في تحديد أفضل مورّد بسرعة ودقة.
+            </p>
+          </div>
+          <MarketIntelligence />
         </div>
       </section>
 

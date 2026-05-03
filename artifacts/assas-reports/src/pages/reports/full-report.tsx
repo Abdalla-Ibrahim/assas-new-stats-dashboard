@@ -19,7 +19,23 @@ import {
   TrendingUp,
   Truck,
   Warehouse,
+  DollarSign,
 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceLine,
+  ComposedChart,
+  Line,
+  Legend,
+} from "recharts";
+import { CEMENT_FACTORIES } from "@/data/cementFactories";
 
 const YEARS = Array.from({ length: 27 }, (_, index) => String(2026 - index));
 const MONTHS = [
@@ -275,6 +291,7 @@ export default function FullReport() {
               { value: "period", label: "المبيعات خلال فترة" },
               { value: "monthly", label: "المبيعات الشهرية" },
               { value: "clinker", label: "الكلنكر" },
+              { value: "prices", label: "مقارنة الأسعار" },
               { value: "share", label: "الحصة السوقية" },
               { value: "identity", label: "هوية أساس" },
             ].map((tab) => (
@@ -441,6 +458,173 @@ export default function FullReport() {
             </div>
           </TabsContent>
 
+          {/* ── PRICE COMPARISON TAB ── */}
+          <TabsContent value="prices">
+            {(() => {
+              const tooltipStyle = {
+                background: "rgba(10,15,30,0.97)",
+                border: "1px solid rgba(245,184,0,0.35)",
+                borderRadius: 10,
+                color: "#fff",
+                direction: "rtl" as const,
+                fontFamily: "Cairo,Tajawal,sans-serif",
+                fontSize: 12,
+              };
+              const sortedByBag = [...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice);
+              const sortedByBulk = [...CEMENT_FACTORIES].sort((a, b) => a.bulkPrice - b.bulkPrice);
+              const avgBag = 13;
+              const avgBulk = Math.round(CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length);
+              const priceColor = (p: number) =>
+                p <= avgBag + 0.5 ? "#10b981" : p <= avgBag + 2 ? "#f5b800" : "#ef4444";
+              const trendData = [
+                { year: "2020", متوسط: 10.2, أعلى: 11.4, أدنى: 9.5 },
+                { year: "2021", متوسط: 11.5, أعلى: 12.8, أدنى: 10.3 },
+                { year: "2022", متوسط: 12.8, أعلى: 14.2, أدنى: 11.8 },
+                { year: "2023", متوسط: 13.4, أعلى: 15.0, أدنى: 12.1 },
+                { year: "2024", متوسط: 14.8, أعلى: 16.4, أدنى: 13.1 },
+                { year: "2025", متوسط: 15.1, أعلى: 16.6, أدنى: 13.1 },
+              ];
+              return (
+                <div className="space-y-6">
+                  {/* KPI row */}
+                  <div className="grid gap-4 sm:grid-cols-4">
+                    {[
+                      { label: "أقل سعر كيس", value: `${sortedByBag[0].bagPrice.toFixed(2)} ﷼`, sub: sortedByBag[0].name, color: "#10b981" },
+                      { label: "متوسط السوق", value: `${avgBag} ﷼`, sub: "مرجع تسعيري", color: "#f5b800" },
+                      { label: "أعلى سعر كيس", value: `${sortedByBag[sortedByBag.length - 1].bagPrice.toFixed(2)} ﷼`, sub: sortedByBag[sortedByBag.length - 1].name, color: "#ef4444" },
+                      { label: "فارق السعر", value: `${(sortedByBag[sortedByBag.length - 1].bagPrice - sortedByBag[0].bagPrice).toFixed(2)} ﷼`, sub: "بين أرخص وأغلى", color: "#a855f7" },
+                    ].map((kpi) => (
+                      <div key={kpi.label} className="rounded-2xl border border-white/8 bg-white/3 p-5">
+                        <p className="text-xs font-bold text-slate-400">{kpi.label}</p>
+                        <p className="mt-1.5 text-2xl font-black" style={{ color: kpi.color }}>{kpi.value}</p>
+                        <p className="mt-0.5 text-xs text-slate-500">{kpi.sub}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bag price bar chart */}
+                  <div className="overflow-hidden rounded-3xl border border-white/8 bg-white/3">
+                    <div className="border-b border-white/8 p-6">
+                      <div className="flex items-center gap-3">
+                        <DollarSign className="h-5 w-5 text-secondary" />
+                        <div>
+                          <h3 className="font-black text-white">سعر كيس الإسمنت — مقارنة جميع الشركات</h3>
+                          <p className="text-xs text-slate-500">مرتبة من الأرخص إلى الأغلى · الخط الذهبي = متوسط السوق ({avgBag} ريال)</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <ResponsiveContainer width="100%" height={380}>
+                        <BarChart data={sortedByBag.map((f) => ({ name: f.shortName, price: f.bagPrice, color: priceColor(f.bagPrice) }))} layout="vertical" margin={{ top: 0, right: 60, bottom: 0, left: 70 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                          <XAxis type="number" domain={[12.5, 17]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
+                          <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 12, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={65} />
+                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)} ريال`, "سعر الكيس"]} />
+                          <ReferenceLine x={avgBag} stroke="#f5b800" strokeWidth={2} strokeDasharray="5 3" label={{ value: `${avgBag}﷼ متوسط`, position: "top", fill: "#f5b800", fontSize: 11, fontFamily: "Cairo,sans-serif" }} />
+                          <Bar dataKey="price" radius={[0, 8, 8, 0]} maxBarSize={20} label={{ position: "right", fill: "rgba(255,255,255,0.6)", fontSize: 10, fontFamily: "Cairo,sans-serif", formatter: (v: number) => `${v.toFixed(2)}﷼` }}>
+                            {sortedByBag.map((f, i) => <Cell key={i} fill={priceColor(f.bagPrice)} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Two columns */}
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    {/* Bulk price */}
+                    <div className="overflow-hidden rounded-3xl border border-white/8 bg-white/3">
+                      <div className="border-b border-white/8 p-5">
+                        <h3 className="font-black text-white">سعر الطن السائب</h3>
+                        <p className="text-xs text-slate-500">ريال/طن — متوسط السوق: {avgBulk} ريال</p>
+                      </div>
+                      <div className="p-5">
+                        <ResponsiveContainer width="100%" height={320}>
+                          <BarChart data={sortedByBulk.map((f) => ({ name: f.shortName, bulk: f.bulkPrice, color: f.color }))} layout="vertical" margin={{ top: 0, right: 50, bottom: 0, left: 65 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
+                            <XAxis type="number" domain={[255, 340]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
+                            <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={62} />
+                            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} ريال/طن`]} />
+                            <ReferenceLine x={avgBulk} stroke="rgba(100,160,255,0.6)" strokeDasharray="4 3" label={{ value: `متوسط ${avgBulk}﷼`, position: "top", fill: "rgba(100,160,255,0.8)", fontSize: 10 }} />
+                            <Bar dataKey="bulk" radius={[0, 6, 6, 0]} maxBarSize={18} label={{ position: "right", fill: "rgba(255,255,255,0.5)", fontSize: 10, formatter: (v: number) => `${v}` }}>
+                              {sortedByBulk.map((d, i) => <Cell key={i} fill={d.color} />)}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Full price table */}
+                    <div className="overflow-hidden rounded-3xl border border-white/8 bg-white/3">
+                      <div className="border-b border-white/8 p-5">
+                        <h3 className="font-black text-white">جدول الأسعار التفصيلي</h3>
+                        <p className="text-xs text-slate-500">الكيس · الطن · الفارق عن متوسط السوق</p>
+                      </div>
+                      <div className="overflow-auto p-5" style={{ maxHeight: 360 }}>
+                        <table className="w-full text-right text-sm">
+                          <thead className="sticky top-0 bg-slate-900/95">
+                            <tr className="border-b border-white/10 text-xs text-slate-500">
+                              <th className="pb-2 font-bold">#</th>
+                              <th className="pb-2 font-bold">الشركة</th>
+                              <th className="pb-2 font-bold">الكيس</th>
+                              <th className="pb-2 font-bold">الطن</th>
+                              <th className="pb-2 font-bold">فارق</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sortedByBag.map((f, i) => {
+                              const delta = f.bagPrice - avgBag;
+                              return (
+                                <tr key={f.id} className="border-b border-white/5 hover:bg-white/4">
+                                  <td className="py-2.5 font-bold text-slate-500">{i + 1}</td>
+                                  <td className="py-2.5">
+                                    <span className="flex items-center gap-2 font-bold text-slate-200">
+                                      <span className="h-2 w-2 rounded-full shrink-0" style={{ background: f.color }} />
+                                      {f.shortName}
+                                    </span>
+                                  </td>
+                                  <td className="py-2.5 font-black" style={{ color: priceColor(f.bagPrice) }}>{f.bagPrice.toFixed(2)}﷼</td>
+                                  <td className="py-2.5 text-slate-300">{f.bulkPrice}﷼</td>
+                                  <td className="py-2.5">
+                                    <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold ${delta <= 0 ? "bg-emerald-900/40 text-emerald-400" : delta <= 2 ? "bg-amber-900/40 text-amber-400" : "bg-red-900/40 text-red-400"}`}>
+                                      {delta > 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                                      {delta > 0 ? "+" : ""}{delta.toFixed(2)}﷼
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Price trend */}
+                  <div className="overflow-hidden rounded-3xl border border-white/8 bg-white/3">
+                    <div className="border-b border-white/8 p-6">
+                      <h3 className="font-black text-white">تطور نطاق أسعار الإسمنت (2020–2025)</h3>
+                      <p className="text-xs text-slate-500">المتوسط الذهبي — الحد الأعلى (أحمر) — الحد الأدنى (أخضر)</p>
+                    </div>
+                    <div className="p-6">
+                      <ResponsiveContainer width="100%" height={240}>
+                        <ComposedChart data={trendData} margin={{ top: 10, right: 20, bottom: 5, left: 10 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
+                          <XAxis dataKey="year" tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} />
+                          <YAxis domain={[9, 18]} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
+                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`${v} ريال`, name]} />
+                          <Legend formatter={(v) => <span style={{ color: "#e2e8f0", fontFamily: "Cairo,sans-serif", fontSize: 11 }}>{v}</span>} />
+                          <Bar dataKey="أعلى" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.3)" strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={40} />
+                          <Bar dataKey="أدنى" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.35)" strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={40} />
+                          <Line type="monotone" dataKey="متوسط" stroke="#f5b800" strokeWidth={3} dot={{ fill: "#f5b800", r: 5, strokeWidth: 0 }} />
+                        </ComposedChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </TabsContent>
+
           <TabsContent value="share" id="market-share">
             <div className="grid gap-6 lg:grid-cols-2">
               <div className="rounded-3xl border border-white/8 bg-white/3 p-7">
@@ -486,7 +670,7 @@ export default function FullReport() {
                 </div>
                 <p className="mb-4 text-xs font-bold tracking-widest text-secondary/70">خبرة تُبنى بثقة منذ عام 2020</p>
                 <div className="space-y-4 text-sm leading-relaxed text-slate-300">
-                  <p>تعمل أساس الإعمار في الخدمات الإسمنتية والخدمات اللوجستية وقطع الغيار داخل المملكة، وتبني شراكات طويلة الأمد مع المقاولين والجهات التجارية.</p>
+                  <p>تعمل أساس الإعمار في الخدمات الإسمنتية داخل المملكة، وتبني شراكات طويلة الأمد مع المقاولين والجهات التجارية.</p>
                   <p>تؤمن الشركة بأن التنمية تبدأ من الأساس، وتضع خبراتها في خدمة التحول الوطني والبنية التحتية وفق رؤية المملكة 2030.</p>
                   <p>يقود المؤسسة م. موسى سالم العايضي، بخبرة تتجاوز 10 سنوات وتجارب عملية في الولايات المتحدة الأمريكية وأبو ظبي.</p>
                 </div>
