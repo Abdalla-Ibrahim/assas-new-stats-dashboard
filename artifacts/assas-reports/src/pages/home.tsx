@@ -245,6 +245,118 @@ export default function Home() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════
+          PRICE COMPARISON TABLE  — moved here (high on page)
+      ═══════════════════════════════════════════════════════ */}
+      <section className="relative overflow-hidden bg-white py-24">
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url(${truckFront})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div className="container relative mx-auto px-4">
+          <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+            <div className="max-w-2xl">
+              <div className="section-label mb-3 text-primary/70">مقارنة الأسعار</div>
+              <h2 className="mb-3 text-4xl font-black text-slate-950 md:text-5xl">
+                أسعار الإسمنت بين الشركات السعودية
+              </h2>
+              <p className="leading-relaxed text-slate-600">
+                مقارنة تقديرية لأسعار الكيس والكمية السائبة (للطن) ومدة التوصيل لدى أبرز الشركات في القطاع.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 rounded-2xl border border-secondary/30 bg-secondary/8 px-5 py-3.5 shrink-0">
+              <BarChart3 className="h-5 w-5 text-secondary" />
+              <div>
+                <p className="text-sm font-bold text-slate-700">آخر تحديث</p>
+                <p className="text-xs text-slate-500">أبريل 2026 — مرجعي للمقاولين</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Summary cards */}
+          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: "أقل سعر للكيس", value: `${minBagPrice.toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
+              { label: "متوسط الطن السائب", value: `${avgBulkPrice.toFixed(0)} ريال`, sub: `عبر ${CEMENT_FACTORIES.length} مصنعاً`, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
+              { label: "أعلى حصة سوقية", value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
+              { label: "إجمالي المصانع", value: `${CEMENT_FACTORIES.length} مصنع`, sub: "مدرجة في تداول", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
+            ].map((card) => (
+              <div key={card.label} className={`rounded-2xl border border-slate-200 bg-gradient-to-br ${card.color} p-5 transition-all hover:-translate-y-1`}>
+                <p className="text-xs font-bold text-slate-600">{card.label}</p>
+                <p className="mt-1.5 text-3xl font-black text-slate-950">{card.value}</p>
+                <p className="mt-1 text-xs text-slate-500">{card.sub}</p>
+                <div className="mt-3 h-0.5 w-12 rounded-full" style={{ background: card.accent }} />
+              </div>
+            ))}
+          </div>
+
+          {/* Table */}
+          <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-2xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-right">
+                <thead>
+                  <tr className="bg-slate-950 text-white">
+                    <th className="px-5 py-4 text-sm font-black">#</th>
+                    <th className="px-5 py-4 text-sm font-black">المصنع</th>
+                    <th className="px-5 py-4 text-sm font-black">الرمز</th>
+                    <th className="px-5 py-4 text-sm font-black">المنطقة</th>
+                    <th className="px-5 py-4 text-sm font-black">سعر الكيس</th>
+                    <th className="px-5 py-4 text-sm font-black">سعر الطن</th>
+                    <th className="px-5 py-4 text-sm font-black">سعر السهم</th>
+                    <th className="px-5 py-4 text-sm font-black">الحصة %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CEMENT_FACTORIES.map((f, i) => (
+                    <tr
+                      key={f.id}
+                      className={`border-t border-slate-100 transition-colors hover:bg-slate-50 ${i % 2 === 0 ? "" : "bg-slate-50/50"}`}
+                    >
+                      <td className="px-5 py-3.5 text-sm font-bold text-slate-400">{i + 1}</td>
+                      <td className="px-5 py-3.5">
+                        <span className="flex items-center gap-2 font-black text-slate-900">
+                          <span className="h-3 w-3 rounded-full shrink-0" style={{ background: f.color }} />
+                          {f.name}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-600">{f.symbol}</span>
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
+                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bagPrice} ريال</td>
+                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} ريال</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                          {formatSAR2(f.stockPrice)}
+                          <span className="mr-1 text-xs opacity-80">
+                            ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
+                          </span>
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${(f.marketShare / 16) * 100}%`, background: f.color }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-slate-700">{f.marketShare}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 text-xs text-slate-500">
+              <span>الأسعار تقديرية لأغراض المقارنة فقط، وقد تتغير حسب المنطقة والكمية ومدة التعاقد.</span>
+              <Link href="/contact" className="font-bold text-primary hover:underline flex items-center gap-1">
+                اطلب عرض سعر دقيق
+                <ChevronLeft className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
           VISUAL GALLERY
       ═══════════════════════════════════════════════════════ */}
       <section className="bg-slate-950 py-24">
@@ -399,117 +511,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════
-          PRICE COMPARISON TABLE
-      ═══════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-white py-24">
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `url(${truckFront})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-        <div className="container relative mx-auto px-4">
-          <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-            <div className="max-w-2xl">
-              <div className="section-label mb-3 text-primary/70">مقارنة الأسعار</div>
-              <h2 className="mb-3 text-4xl font-black text-slate-950 md:text-5xl">
-                أسعار الإسمنت بين الشركات السعودية
-              </h2>
-              <p className="leading-relaxed text-slate-600">
-                مقارنة تقديرية لأسعار الكيس والكمية السائبة (للطن) ومدة التوصيل لدى أبرز الشركات في القطاع.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 rounded-2xl border border-secondary/30 bg-secondary/8 px-5 py-3.5 shrink-0">
-              <BarChart3 className="h-5 w-5 text-secondary" />
-              <div>
-                <p className="text-sm font-bold text-slate-700">آخر تحديث</p>
-                <p className="text-xs text-slate-500">أبريل 2026 — مرجعي للمقاولين</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Summary cards */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "أقل سعر للكيس", value: `${minBagPrice.toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
-              { label: "متوسط الطن السائب", value: `${avgBulkPrice.toFixed(0)} ريال`, sub: `عبر ${CEMENT_FACTORIES.length} مصنعاً`, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
-              { label: "أعلى حصة سوقية", value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
-              { label: "إجمالي المصانع", value: `${CEMENT_FACTORIES.length} مصنع`, sub: "مدرجة في تداول", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
-            ].map((card) => (
-              <div key={card.label} className={`rounded-2xl border border-slate-200 bg-gradient-to-br ${card.color} p-5 transition-all hover:-translate-y-1`}>
-                <p className="text-xs font-bold text-slate-600">{card.label}</p>
-                <p className="mt-1.5 text-3xl font-black text-slate-950">{card.value}</p>
-                <p className="mt-1 text-xs text-slate-500">{card.sub}</p>
-                <div className="mt-3 h-0.5 w-12 rounded-full" style={{ background: card.accent }} />
-              </div>
-            ))}
-          </div>
-
-          {/* Table */}
-          <div className="overflow-hidden rounded-3xl border border-slate-200 shadow-2xl">
-            <div className="overflow-x-auto">
-              <table className="w-full text-right">
-                <thead>
-                  <tr className="bg-slate-950 text-white">
-                    <th className="px-5 py-4 text-sm font-black">#</th>
-                    <th className="px-5 py-4 text-sm font-black">المصنع</th>
-                    <th className="px-5 py-4 text-sm font-black">الرمز</th>
-                    <th className="px-5 py-4 text-sm font-black">المنطقة</th>
-                    <th className="px-5 py-4 text-sm font-black">سعر الكيس</th>
-                    <th className="px-5 py-4 text-sm font-black">سعر الطن</th>
-                    <th className="px-5 py-4 text-sm font-black">سعر السهم</th>
-                    <th className="px-5 py-4 text-sm font-black">الحصة %</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {CEMENT_FACTORIES.map((f, i) => (
-                    <tr
-                      key={f.id}
-                      className={`border-t border-slate-100 transition-colors hover:bg-slate-50 ${i % 2 === 0 ? "" : "bg-slate-50/50"}`}
-                    >
-                      <td className="px-5 py-3.5 text-sm font-bold text-slate-400">{i + 1}</td>
-                      <td className="px-5 py-3.5">
-                        <span className="flex items-center gap-2 font-black text-slate-900">
-                          <span className="h-3 w-3 rounded-full shrink-0" style={{ background: f.color }} />
-                          {f.name}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-black text-slate-600">{f.symbol}</span>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
-                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bagPrice} ريال</td>
-                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} ريال</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                          {formatSAR2(f.stockPrice)}
-                          <span className="mr-1 text-xs opacity-80">
-                            ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
-                          </span>
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${(f.marketShare / 16) * 100}%`, background: f.color }}
-                            />
-                          </div>
-                          <span className="text-xs font-bold text-slate-700">{f.marketShare}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 text-xs text-slate-500">
-              <span>الأسعار تقديرية لأغراض المقارنة فقط، وقد تتغير حسب المنطقة والكمية ومدة التعاقد.</span>
-              <Link href="/contact" className="font-bold text-primary hover:underline flex items-center gap-1">
-                اطلب عرض سعر دقيق
-                <ChevronLeft className="h-3 w-3" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ═══════════════════════════════════════════════════════
           IDENTITY + LOCATIONS
