@@ -25,6 +25,7 @@ import { PriceInsights } from "@/components/analytics/PriceInsights";
 import { MarketIntelligence } from "@/components/analytics/MarketIntelligence";
 import { CementPriceTicker } from "@/components/CementPriceTicker";
 import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useLang } from "@/contexts/LanguageContext";
 
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
 import heroScene from "@assets/Gemini_Generated_Image_ge0120ge0120ge01_1777804194837.png";
@@ -35,40 +36,66 @@ import assasEngineer from "@assets/Gemini_Generated_Image_pny4afpny4afpny4_17778
 import assasLobby from "@assets/Gemini_Generated_Image_1i6wtx1i6wtx1i6w_1777804194840.png";
 import assasPortrait from "@assets/Gemini_Generated_Image_lwc8xlwc8xlwc8xl_1777804194840.png";
 
-const services = [
-  {
-    title: "الخدمات الإسمنتية",
-    description:
-      "توريد الإسمنت السائب والمكيس لكل مناطق المملكة، مع خيارات مناسبة للمقاولين والمشاريع الإنشائية والتجارية.",
-    icon: Factory,
-    accent: "#f5b800",
-    bg: "from-amber-500/10 to-amber-500/5",
-  },
-];
-
-const identity = [
-  "انطلقت أساس الإعمار عام 2020 لتكون شريكاً تشغيلياً موثوقاً للمقاولين والجهات التجارية.",
-  "خبرة تمتد لأكثر من 5 سنوات في الخدمات الإسمنتية داخل المملكة.",
-  "تدعم المشاريع الوطنية الكبرى وتواكب مستهدفات رؤية المملكة 2030 في تطوير البنية التحتية.",
-  "يقود المؤسسة م. موسى سالم العايضي بخبرات عملية واستراتيجية داخل وخارج المنطقة.",
-];
-
-const locations = [
-  { city: "الرياض", label: "المقر الرئيسي", detail: "شارع الصناعة، الرياض", icon: "🏢" },
-  { city: "الدمام", label: "فرع التوزيع", detail: "المنطقة الصناعية، الدمام", icon: "🏭" },
-  { city: "حفر الباطن", label: "نقطة تشغيل", detail: "حفر الباطن — المنطقة الشرقية", icon: "📍" },
-];
-
-const heroStats = [
-  { value: "+5", label: "سنوات خبرة", sub: "في القطاع الإنشائي" },
-  { value: "16", label: "مصنع إسمنت", sub: "مراقب ومحلل" },
-  { value: "100%", label: "تغطية المملكة", sub: "جميع المناطق" },
-  { value: "24/7", label: "خدمة مستمرة", sub: "دعم وتوريد" },
-];
-
 const formatSAR2 = (n: number) => n.toFixed(2);
 
 export default function Home() {
+  const { t, locale } = useLang();
+
+  const services = [
+    {
+      title: t.footer.servicesList[0],
+      description:
+        locale === "zh"
+          ? "为沙特全境承包商和建筑项目提供散装及袋装水泥供应。"
+          : locale === "en"
+          ? "Bulk and bagged cement supply across Saudi Arabia for contractors and commercial construction projects."
+          : "توريد الإسمنت السائب والمكيس لكل مناطق المملكة، مع خيارات مناسبة للمقاولين والمشاريع الإنشائية والتجارية.",
+      icon: Factory,
+      accent: "#f5b800",
+      bg: "from-amber-500/10 to-amber-500/5",
+    },
+  ];
+
+  const identity =
+    locale === "en"
+      ? [
+          "Assas Al-Emaar was founded in 2020 to be a trusted operational partner for contractors and commercial entities.",
+          "Over 5 years of experience in cement supply services within Saudi Arabia.",
+          "Supporting major national projects aligned with Saudi Vision 2030 infrastructure targets.",
+          "Led by Eng. Moussa Salem Al-Ayedhi with strategic and operational expertise across the region.",
+        ]
+      : locale === "zh"
+      ? [
+          "阿萨斯建筑公司成立于2020年，致力于成为承包商和商业机构的可靠运营伙伴。",
+          "在沙特境内水泥供应服务领域拥有超过5年的经验。",
+          "支持与沙特2030愿景基础设施目标对接的重大国家项目。",
+          "由Eng. Moussa Salem Al-Ayedhi领导，在区域内具备丰富的战略和运营经验。",
+        ]
+      : [
+          "انطلقت أساس الإعمار عام 2020 لتكون شريكاً تشغيلياً موثوقاً للمقاولين والجهات التجارية.",
+          "خبرة تمتد لأكثر من 5 سنوات في الخدمات الإسمنتية داخل المملكة.",
+          "تدعم المشاريع الوطنية الكبرى وتواكب مستهدفات رؤية المملكة 2030 في تطوير البنية التحتية.",
+          "يقود المؤسسة م. موسى سالم العايضي بخبرات عملية واستراتيجية داخل وخارج المنطقة.",
+        ];
+
+  const locations =
+    locale === "en"
+      ? [
+          { city: "Riyadh", label: "HQ", detail: "Industrial Street, Riyadh", icon: "🏢" },
+          { city: "Dammam", label: "Distribution Branch", detail: "Industrial Zone, Dammam", icon: "🏭" },
+          { city: "Hafar Al-Batin", label: "Operating Point", detail: "Hafar Al-Batin — Eastern Region", icon: "📍" },
+        ]
+      : locale === "zh"
+      ? [
+          { city: "利雅得", label: "总部", detail: "工业街，利雅得", icon: "🏢" },
+          { city: "达曼", label: "配送分支", detail: "工业区，达曼", icon: "🏭" },
+          { city: "哈法尔巴廷", label: "运营点", detail: "哈法尔巴廷 — 东部地区", icon: "📍" },
+        ]
+      : [
+          { city: "الرياض", label: "المقر الرئيسي", detail: "شارع الصناعة، الرياض", icon: "🏢" },
+          { city: "الدمام", label: "فرع التوزيع", detail: "المنطقة الصناعية، الدمام", icon: "🏭" },
+          { city: "حفر الباطن", label: "نقطة تشغيل", detail: "حفر الباطن — المنطقة الشرقية", icon: "📍" },
+        ];
   const minBagPrice = Math.min(...CEMENT_FACTORIES.map((f) => f.bagPrice));
   const avgBulkPrice = CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length;
   const maxShare = Math.max(...CEMENT_FACTORIES.map((f) => f.marketShare));
@@ -109,8 +136,8 @@ export default function Home() {
         <div className="container relative z-10 mx-auto px-4 pt-24 pb-16">
           <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-secondary/30 bg-secondary/10 px-5 py-2.5 text-sm font-black text-secondary shadow-2xl shadow-secondary/10 backdrop-blur-md">
             <span className="h-2.5 w-2.5 rounded-full bg-secondary animate-pulse" />
-            مؤشر سعر الاسمنت السعودي
-            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-black text-slate-950">مباشر</span>
+            {t.hero.badge}
+            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-black text-slate-950">{t.hero.live}</span>
           </div>
           <div className="grid items-center gap-16 lg:grid-cols-[1.2fr_0.8fr]">
             {/* LEFT: HEADLINE */}
@@ -118,27 +145,27 @@ export default function Home() {
               {/* Badge */}
               <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-secondary/30 bg-secondary/10 px-5 py-2 text-sm font-bold text-secondary backdrop-blur-sm">
                 <div className="h-2 w-2 rounded-full bg-secondary animate-pulse" />
-                هوية تشغيلية سعودية لقطاع الإنشاءات
+                {t.hero.identity}
                 <ShieldCheck className="h-4 w-4" />
               </div>
 
               {/* Main headline */}
               <h1 className="mb-6 font-black leading-[1.05] text-white">
                 <span className="block text-5xl font-extrabold tracking-wide text-secondary drop-shadow-2xl md:text-6xl xl:text-7xl">
-                  مؤشر سعر الاسمنت السعودي
+                  {t.hero.headline1}
                 </span>
                 <span className="mt-2 block text-xl font-bold text-white/80 md:text-2xl">
-                  شركة أساس الإعمار التجارية
+                  {t.hero.headline2}
                 </span>
-                <span className="mt-4 block text-6xl md:text-7xl xl:text-8xl">نبني الأساس…</span>
+                <span className="mt-4 block text-6xl md:text-7xl xl:text-8xl">{t.hero.headline3}</span>
                 <span className="block text-6xl md:text-7xl xl:text-8xl text-gradient-gold mt-2 drop-shadow-2xl">
-                  ونقود الإنجاز.
+                  {t.hero.headline4}
                 </span>
               </h1>
 
               {/* Sub text */}
               <p className="mb-10 max-w-xl text-lg leading-loose text-slate-300 md:text-xl">
-                في أساس الإعمار نقدّم حلولاً متكاملة في توريد الأسمنت داخل المملكة — بخبرة عملية تدعم المقاولين والمشاريع الوطنية الكبرى.
+                {t.hero.subtitle}
               </p>
 
               {/* CTA buttons */}
@@ -148,7 +175,7 @@ export default function Home() {
                   className="group relative overflow-hidden rounded-2xl bg-secondary px-8 py-4 text-base font-black text-slate-950 shadow-2xl shadow-secondary/30 transition-all duration-300 hover:shadow-secondary/50 hover:-translate-y-1"
                 >
                   <span className="relative z-10 flex items-center gap-2">
-                    عرض الإحصاءات الشاملة
+                    {t.hero.cta1}
                     <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-l from-amber-300 to-secondary opacity-0 transition-opacity group-hover:opacity-100" />
@@ -157,13 +184,13 @@ export default function Home() {
                   href="/reports"
                   className="rounded-2xl border border-white/20 bg-white/8 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/15 hover:border-white/40"
                 >
-                  مركز التقارير
+                  {t.hero.cta2}
                 </Link>
               </div>
 
               {/* Stats row */}
               <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {heroStats.map((stat) => (
+                {t.heroStats.map((stat) => (
                   <div key={stat.label} className="text-center">
                     <div className="text-3xl font-black text-secondary md:text-4xl">{stat.value}</div>
                     <div className="mt-1 text-xs font-bold text-white">{stat.label}</div>
@@ -179,8 +206,8 @@ export default function Home() {
                 <div className="rounded-[22px] bg-slate-900/90 p-8 backdrop-blur-xl">
                   <div className="mb-6 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold tracking-widest text-secondary uppercase">بطاقة الهوية</p>
-                      <h2 className="mt-1 text-2xl font-black text-white">شركة أساس الإعمار</h2>
+                      <p className="text-xs font-bold tracking-widest text-secondary uppercase">{t.idCard.label}</p>
+                      <h2 className="mt-1 text-2xl font-black text-white">{t.idCard.name}</h2>
                     </div>
                     <div className="rounded-2xl bg-white p-2 shadow-xl ring-2 ring-secondary/40">
                       <BrandLogo size={52} />
@@ -192,10 +219,10 @@ export default function Home() {
 
                   <div className="space-y-4">
                     {[
-                      { label: "تأسست عام", value: "2020", icon: "🗓" },
-                      { label: "قطاع العمل", value: "إسمنت", icon: "⚙️" },
-                      { label: "التغطية الجغرافية", value: "جميع مناطق المملكة", icon: "🇸🇦" },
-                      { label: "المدير التنفيذي", value: "م. موسى سالم العايضي", icon: "👤" },
+                      { label: t.idCard.founded, value: "2020", icon: "🗓" },
+                      { label: t.idCard.sector, value: t.idCard.sectorVal, icon: "⚙️" },
+                      { label: t.idCard.coverage, value: t.idCard.coverageVal, icon: "🇸🇦" },
+                      { label: t.idCard.ceo, value: t.idCard.ceoVal, icon: "👤" },
                     ].map((row) => (
                       <div key={row.label} className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -208,8 +235,8 @@ export default function Home() {
                   </div>
 
                   <div className="mt-6 rounded-xl bg-gradient-to-l from-secondary/20 to-secondary/5 p-4 text-center">
-                    <div className="text-xs text-slate-400">رؤية المملكة</div>
-                    <div className="text-lg font-black text-secondary">شريك استراتيجي لـ 2030</div>
+                    <div className="text-xs text-slate-400">{t.idCard.vision}</div>
+                    <div className="text-lg font-black text-secondary">{t.idCard.visionVal}</div>
                   </div>
                 </div>
               </div>
@@ -219,7 +246,7 @@ export default function Home() {
 
         {/* Bottom scroll hint */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500">
-          <span className="text-xs font-bold tracking-widest uppercase">استكشف</span>
+          <span className="text-xs font-bold tracking-widest uppercase">{t.hero.explore}</span>
           <div className="h-8 w-px animate-bounce bg-gradient-to-b from-slate-500 to-transparent" />
         </div>
       </section>
@@ -228,11 +255,11 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-around gap-6 text-center">
             {[
-              { val: `${minBagPrice.toFixed(2)} ريال`, label: "أقل سعر كيس" },
-              { val: "13 ريال", label: "متوسط سعر الكيس" },
-              { val: `${maxShare.toFixed(1)}%`, label: "أعلى حصة سوقية" },
-              { val: `${CEMENT_FACTORIES.length} مصنع`, label: "المصانع المُراقبة" },
-              { val: "3 مدن", label: "مواقع تشغيلية" },
+              { val: `${minBagPrice.toFixed(2)} ${t.priceTable.sar}`, label: t.stats.lowestBag },
+              { val: `13 ${t.priceTable.sar}`, label: t.stats.avgBag },
+              { val: `${maxShare.toFixed(1)}%`, label: t.stats.topShare },
+              { val: `${CEMENT_FACTORIES.length} ${t.stats.factoryUnit}`, label: t.stats.factories },
+              { val: `3 ${t.stats.cityUnit}`, label: t.stats.locations },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-4">
                 {i > 0 && <div className="hidden h-8 w-px bg-white/10 sm:block" />}
@@ -254,19 +281,19 @@ export default function Home() {
         <div className="container relative mx-auto px-4">
           <div className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
             <div className="max-w-2xl">
-              <div className="section-label mb-3 text-primary/70">مقارنة الأسعار</div>
+              <div className="section-label mb-3 text-primary/70">{t.priceTable.sectionLabel}</div>
               <h2 className="mb-3 text-4xl font-black text-slate-950 md:text-5xl">
-                أسعار الإسمنت بين الشركات السعودية
+                {t.priceTable.title}
               </h2>
               <p className="leading-relaxed text-slate-600">
-                مقارنة تقديرية لأسعار الكيس والكمية السائبة (للطن) ومدة التوصيل لدى أبرز الشركات في القطاع.
+                {t.priceTable.subtitle}
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-2xl border border-secondary/30 bg-secondary/8 px-5 py-3.5 shrink-0">
               <BarChart3 className="h-5 w-5 text-secondary" />
               <div>
-                <p className="text-sm font-bold text-slate-700">آخر تحديث</p>
-                <p className="text-xs text-slate-500">أبريل 2026 — مرجعي للمقاولين</p>
+                <p className="text-sm font-bold text-slate-700">{t.priceTable.updated}</p>
+                <p className="text-xs text-slate-500">{t.priceTable.updatedSub}</p>
               </div>
             </div>
           </div>
@@ -274,10 +301,10 @@ export default function Home() {
           {/* Summary cards */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "أقل سعر للكيس", value: `${minBagPrice.toFixed(2)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
-              { label: "متوسط سعر الكيس", value: "13 ريال", sub: "مرجع تسعيري تقريبي", color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
-              { label: "أعلى حصة سوقية", value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
-              { label: "إجمالي المصانع", value: `${CEMENT_FACTORIES.length} مصنع`, sub: "مدرجة في تداول", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
+              { label: t.priceTable.lowestBag, value: `${minBagPrice.toFixed(2)} ${t.priceTable.sar}`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
+              { label: t.priceTable.avgBag, value: `13 ${t.priceTable.sar}`, sub: t.priceTable.avgBagSub, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
+              { label: t.priceTable.topShare, value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
+              { label: t.priceTable.totalFactories, value: `${CEMENT_FACTORIES.length} ${t.stats.factoryUnit}`, sub: t.priceTable.listedIn, color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
             ].map((card) => (
               <div key={card.label} className={`rounded-2xl border border-slate-200 bg-gradient-to-br ${card.color} p-5 transition-all hover:-translate-y-1`}>
                 <p className="text-xs font-bold text-slate-600">{card.label}</p>
@@ -302,15 +329,15 @@ export default function Home() {
                   <table className="w-full text-right">
                     <thead>
                       <tr className="bg-slate-950 text-white">
-                        <th className="px-5 py-4 text-sm font-black">#</th>
-                        <th className="px-5 py-4 text-sm font-black">المصنع</th>
-                        <th className="px-5 py-4 text-sm font-black">الرمز</th>
-                        <th className="px-5 py-4 text-sm font-black">المنطقة</th>
-                        <th className="px-5 py-4 text-sm font-black">سعر الكيس</th>
-                        <th className="px-5 py-4 text-sm font-black min-w-[160px]">شريط السعر</th>
-                        <th className="px-5 py-4 text-sm font-black">سعر الطن</th>
-                        <th className="px-5 py-4 text-sm font-black">سعر السهم</th>
-                        <th className="px-5 py-4 text-sm font-black">الحصة %</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.num}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.factory}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.symbol}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.region}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.bagPrice}</th>
+                        <th className="px-5 py-4 text-sm font-black min-w-[160px]">{t.priceTable.col.priceBar}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.tonPrice}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.stockPrice}</th>
+                        <th className="px-5 py-4 text-sm font-black">{t.priceTable.col.share}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -335,7 +362,7 @@ export default function Home() {
                             <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
                             <td className="px-5 py-3.5">
                               <span className="font-black text-lg" style={{ color }}>{f.bagPrice.toFixed(2)}</span>
-                              <span className="text-xs text-slate-500 mr-1">ريال</span>
+                              <span className="text-xs text-slate-500 mr-1">{t.priceTable.sar}</span>
                             </td>
                             <td className="px-5 py-3.5">
                               <div className="flex items-center gap-2">
@@ -350,7 +377,7 @@ export default function Home() {
                                 </span>
                               </div>
                             </td>
-                            <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} ريال</td>
+                            <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} {t.priceTable.sar}</td>
                             <td className="px-5 py-3.5">
                               <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
                                 {formatSAR2(f.stockPrice)}
@@ -379,9 +406,15 @@ export default function Home() {
               })()}
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4 text-xs text-slate-500">
-              <span>الأسعار تقديرية لأغراض المقارنة فقط، وقد تتغير حسب المنطقة والكمية ومدة التعاقد.</span>
+              <span>
+                {locale === "en"
+                  ? "Prices are estimated for comparison purposes only and may vary by region, quantity, and contract duration."
+                  : locale === "zh"
+                  ? "价格仅供参考，可能因地区、数量和合同期限而有所不同。"
+                  : "الأسعار تقديرية لأغراض المقارنة فقط، وقد تتغير حسب المنطقة والكمية ومدة التعاقد."}
+              </span>
               <Link href="/contact" className="font-bold text-primary hover:underline flex items-center gap-1">
-                اطلب عرض سعر دقيق
+                {t.footer.ctaBtn}
                 <ChevronLeft className="h-3 w-3" />
               </Link>
             </div>
@@ -663,15 +696,21 @@ export default function Home() {
         <div className="container relative z-10 mx-auto max-w-4xl px-4 text-center text-white">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/10 px-5 py-2 text-sm font-bold text-secondary">
             <Zap className="h-4 w-4" />
-            بوابة الإحصاءات والتقارير
+            {locale === "en" ? "Reports & Statistics Portal" : locale === "zh" ? "报告与统计门户" : "بوابة الإحصاءات والتقارير"}
           </div>
           <h2 className="mb-6 text-4xl font-black md:text-5xl lg:text-6xl leading-tight">
-            اطّلع على تقارير الأداء
+            {locale === "en" ? "Explore Performance Reports" : locale === "zh" ? "探索绩效报告" : "اطّلع على تقارير الأداء"}
             <br />
-            <span className="text-gradient-gold">والإحصاءات الشاملة</span>
+            <span className="text-gradient-gold">
+              {locale === "en" ? "& Full Statistics" : locale === "zh" ? "与完整统计数据" : "والإحصاءات الشاملة"}
+            </span>
           </h2>
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-white/75">
-            نوفر صفحة تقارير منظمة تجمع الفلاتر، الجداول، المقارنات، الحصة السوقية، وحركة الكلنكر لتسهيل قراءة المشهد التشغيلي.
+            {locale === "en"
+              ? "We provide an organized reports page combining filters, tables, comparisons, market share, and clinker movement to simplify reading the operational landscape."
+              : locale === "zh"
+              ? "我们提供一个有组织的报告页面，整合了过滤器、表格、比较、市场份额和熟料走势，便于掌握运营全貌。"
+              : "نوفر صفحة تقارير منظمة تجمع الفلاتر، الجداول، المقارنات، الحصة السوقية، وحركة الكلنكر لتسهيل قراءة المشهد التشغيلي."}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -679,7 +718,7 @@ export default function Home() {
               className="group relative overflow-hidden rounded-2xl bg-secondary px-8 py-4 text-base font-black text-slate-950 shadow-2xl shadow-secondary/30 transition-all hover:shadow-secondary/50 hover:-translate-y-1"
             >
               <span className="relative z-10 flex items-center gap-2">
-                عرض التقرير الشامل
+                {t.hero.cta1}
                 <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
               </span>
             </Link>
@@ -687,7 +726,7 @@ export default function Home() {
               href="/contact"
               className="rounded-2xl border border-white/25 bg-white/10 px-8 py-4 text-base font-bold text-white backdrop-blur-sm transition-all hover:bg-white/20"
             >
-              التواصل معنا
+              {t.nav.contact}
             </Link>
           </div>
         </div>

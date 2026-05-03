@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 import Home from "@/pages/home";
 import Reports from "@/pages/reports/index";
@@ -18,7 +19,6 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col w-full">
       <Navbar />
-      {/* pt-[72px] accounts for the fixed navbar height, plus ticker height ~40px */}
       <main className="flex-1 w-full flex flex-col pt-[112px]">
         <Switch>
           <Route path="/" component={Home} />
@@ -37,10 +37,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <LanguageProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </LanguageProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

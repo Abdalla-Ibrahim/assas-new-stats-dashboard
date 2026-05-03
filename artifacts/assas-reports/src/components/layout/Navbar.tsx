@@ -1,19 +1,22 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { Menu, X, ChevronDown } from "lucide-react";
-
-const NAV_LINKS = [
-  { href: "/", label: "الرئيسية" },
-  { href: "/reports", label: "التقارير" },
-  { href: "/reports/full-report", label: "الإحصاءات الشاملة" },
-  { href: "/contact", label: "التواصل" },
-];
+import { Menu, X } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLang } from "@/contexts/LanguageContext";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
+  const { t } = useLang();
+
+  const NAV_LINKS = [
+    { href: "/", label: t.nav.home },
+    { href: "/reports", label: t.nav.reports },
+    { href: "/reports/full-report", label: t.nav.fullReport },
+    { href: "/contact", label: t.nav.contact },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
@@ -41,8 +44,8 @@ export function Navbar() {
             <div className="absolute inset-0 rounded-2xl bg-secondary/10 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           <div className="hidden leading-tight sm:block">
-            <span className="block text-lg font-black tracking-tight text-white drop-shadow">شركة أساس الإعمار</span>
-            <span className="block text-[10px] font-bold tracking-widest text-secondary/90 uppercase">نبني الأساس ونقود الإنجاز</span>
+            <span className="block text-lg font-black tracking-tight text-white drop-shadow">{t.idCard.name}</span>
+            <span className="block text-[10px] font-bold tracking-widest text-secondary/90 uppercase">{t.footer.tagline}</span>
           </div>
         </Link>
 
@@ -67,24 +70,28 @@ export function Navbar() {
           })}
         </div>
 
-        {/* CTA button */}
+        {/* Right side: language switcher + CTA */}
         <div className="hidden items-center gap-3 sm:flex">
+          <LanguageSwitcher />
           <Link
             href="/reports/full-report"
             className="group relative overflow-hidden rounded-full bg-secondary px-6 py-2.5 text-sm font-black text-slate-950 shadow-lg shadow-secondary/30 transition-all duration-300 hover:shadow-secondary/50 hover:-translate-y-px"
           >
-            <span className="relative z-10">بوابة التقارير</span>
+            <span className="relative z-10">{t.nav.cta}</span>
             <div className="absolute inset-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
           </Link>
         </div>
 
         {/* Mobile menu button */}
-        <button
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 text-white lg:hidden"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <LanguageSwitcher />
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 text-white"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
@@ -107,7 +114,7 @@ export function Navbar() {
                 className="flex w-full items-center justify-center rounded-xl bg-secondary py-3 text-sm font-black text-slate-950"
                 onClick={() => setOpen(false)}
               >
-                بوابة التقارير
+                {t.nav.cta}
               </Link>
             </div>
           </div>

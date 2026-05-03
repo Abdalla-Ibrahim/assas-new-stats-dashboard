@@ -12,7 +12,15 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Assas Reports Artifact
 
-The `artifacts/assas-reports` app is an Arabic RTL website for **أساس الإعمار التجارية** — a Saudi cement supply company. Dark/navy + gold visual system. Key features:
+The `artifacts/assas-reports` app is a **trilingual** (Arabic/English/Chinese) website for **أساس الإعمار التجارية** — a Saudi cement supply company. Dark/navy + gold visual system. Arabic is RTL, English and Chinese are LTR (direction is toggled on `<html>`).
+
+### Internationalization (i18n)
+- `src/i18n/translations.ts` — all translated strings for 3 locales (`ar`, `en`, `zh`), `as const`
+- `src/contexts/LanguageContext.tsx` — React context with `locale`, `setLocale`, `t`, `dir`; persists to `localStorage`; updates `document.documentElement.dir` and `lang` on change
+- `src/components/LanguageSwitcher.tsx` — flag/label toggle in the Navbar
+- All key pages/components use `useLang()` hook for translations
+
+### Key features:
 
 ### Pages & Sections
 - **Home page** (`/`) with:
@@ -36,10 +44,11 @@ The `artifacts/assas-reports` app is an Arabic RTL website for **أساس الإ
 - **Contact** (`/contact`) page
 
 ### Data
-- `src/data/cementFactories.ts` — 16 Saudi cement factories with realistic price spread:
+- `src/data/cementFactories.ts` — **17** Saudi cement factories with realistic price spread:
   - Bag prices range 13.10 ريال (السعودية/حفر الباطن) → 16.40 ريال (العلا)
-  - Bulk prices range 267 → 330 ريال/ton
+  - Bulk prices range 190 → 230 ريال/ton
   - Market share, production, capacity, stock price/change, color per factory
+  - 17th company: شركة أسمنت جازان (3099)
 
 ### Analytics Components
 - `SaudiMap.tsx` — geographically accurate SVG map (viewBox 0 0 820 680), 13 regions, factory pins, utilization badge
