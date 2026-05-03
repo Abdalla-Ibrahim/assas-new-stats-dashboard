@@ -7,7 +7,6 @@ import NotFound from "@/pages/not-found";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 
-// Placeholders for pages
 import Home from "@/pages/home";
 import Reports from "@/pages/reports/index";
 import FullReport from "@/pages/reports/full-report";
@@ -19,7 +18,8 @@ function Router() {
   return (
     <div className="min-h-screen flex flex-col w-full">
       <Navbar />
-      <main className="flex-1 w-full flex flex-col">
+      {/* pt-[72px] accounts for the fixed navbar height, plus ticker height ~40px */}
+      <main className="flex-1 w-full flex flex-col pt-[112px]">
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/reports" component={Reports} />
