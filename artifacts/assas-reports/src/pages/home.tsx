@@ -18,6 +18,8 @@ import { BrandLogo } from "@/components/brand/BrandLogo";
 import { SaudiMap } from "@/components/analytics/SaudiMap";
 import { ShippingCalculator } from "@/components/analytics/ShippingCalculator";
 import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
+import { CementPriceTicker } from "@/components/CementPriceTicker";
+import { CEMENT_FACTORIES } from "@/data/cementFactories";
 
 import officeImage from "@assets/Gemini_Generated_Image_rid8qnrid8qnrid8_1776938760079.png";
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
@@ -82,23 +84,7 @@ const visualGallery = [
   },
 ];
 
-type PriceRow = {
-  company: string;
-  bagPrice: number;
-  bulkPrice: number;
-  delivery: string;
-  highlighted?: boolean;
-  trend: "up" | "down" | "flat";
-};
-
-const priceComparison: PriceRow[] = [
-  { company: "أساس الإعمار", bagPrice: 14.5, bulkPrice: 285, delivery: "24-72 ساعة", highlighted: true, trend: "down" },
-  { company: "أسمنت اليمامة", bagPrice: 15.0, bulkPrice: 295, delivery: "48-96 ساعة", trend: "up" },
-  { company: "أسمنت الرياض", bagPrice: 15.25, bulkPrice: 298, delivery: "48-72 ساعة", trend: "flat" },
-  { company: "أسمنت القصيم", bagPrice: 15.5, bulkPrice: 305, delivery: "72-120 ساعة", trend: "up" },
-  { company: "أسمنت الجنوبية", bagPrice: 14.75, bulkPrice: 289, delivery: "48-96 ساعة", trend: "down" },
-  { company: "أسمنت ينبع", bagPrice: 15.1, bulkPrice: 292, delivery: "72-120 ساعة", trend: "flat" },
-];
+const formatSAR2 = (n: number) => n.toFixed(2);
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("ar-SA", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
@@ -129,6 +115,9 @@ const creativeIdeas = [
 export default function Home() {
   return (
     <div className="w-full" data-testid="page-home">
+      {/* CEMENT PRICE TICKER */}
+      <CementPriceTicker />
+
       {/* HERO */}
       <section className="relative overflow-hidden bg-slate-950 text-white">
         <div
@@ -304,57 +293,49 @@ export default function Home() {
               <table className="w-full text-right">
                 <thead className="bg-slate-950 text-white">
                   <tr>
-                    <th className="px-6 py-4 text-sm font-black">الشركة</th>
-                    <th className="px-6 py-4 text-sm font-black">سعر الكيس (ريال)</th>
-                    <th className="px-6 py-4 text-sm font-black">سعر الطن سائب (ريال)</th>
-                    <th className="px-6 py-4 text-sm font-black">مدة التوصيل</th>
-                    <th className="px-6 py-4 text-sm font-black">الاتجاه</th>
+                    <th className="px-5 py-4 text-sm font-black">المصنع</th>
+                    <th className="px-5 py-4 text-sm font-black">الرمز</th>
+                    <th className="px-5 py-4 text-sm font-black">المنطقة</th>
+                    <th className="px-5 py-4 text-sm font-black">سعر الكيس (ريال)</th>
+                    <th className="px-5 py-4 text-sm font-black">سعر الطن السائب</th>
+                    <th className="px-5 py-4 text-sm font-black">سعر السهم</th>
+                    <th className="px-5 py-4 text-sm font-black">الحصة %</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {priceComparison.map((row) => {
-                    const TrendIcon =
-                      row.trend === "up" ? TrendingUp : row.trend === "down" ? TrendingDown : BarChart3;
-                    const trendColor =
-                      row.trend === "up"
-                        ? "text-rose-600 bg-rose-50"
-                        : row.trend === "down"
-                        ? "text-emerald-700 bg-emerald-50"
-                        : "text-slate-600 bg-slate-100";
-                    return (
-                      <tr
-                        key={row.company}
-                        className={`border-t border-slate-100 transition-colors ${
-                          row.highlighted ? "bg-primary/5" : "hover:bg-slate-50"
-                        }`}
-                      >
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-3">
-                            {row.highlighted && (
-                              <span className="inline-flex h-2 w-2 rounded-full bg-secondary" />
-                            )}
-                            <span className={`font-black ${row.highlighted ? "text-primary" : "text-slate-800"}`}>
-                              {row.company}
-                            </span>
-                            {row.highlighted && (
-                              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-bold text-white">
-                                موقعنا
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 font-bold text-slate-700">{formatNumber(row.bagPrice)}</td>
-                        <td className="px-6 py-5 font-bold text-slate-700">{formatNumber(row.bulkPrice)}</td>
-                        <td className="px-6 py-5 text-sm text-slate-600">{row.delivery}</td>
-                        <td className="px-6 py-5">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${trendColor}`}>
-                            <TrendIcon className="h-3.5 w-3.5" />
-                            {row.trend === "up" ? "ارتفاع" : row.trend === "down" ? "انخفاض" : "ثابت"}
+                  {CEMENT_FACTORIES.map((f, i) => (
+                    <tr
+                      key={f.id}
+                      className={`border-t border-slate-100 transition-colors hover:bg-slate-50 ${i % 2 === 0 ? "" : "bg-slate-50/50"}`}
+                    >
+                      <td className="px-5 py-3.5">
+                        <span className="flex items-center gap-2 font-black text-slate-900">
+                          <span className="h-3 w-3 rounded-full shrink-0" style={{ background: f.color }} />
+                          {f.name}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs font-bold text-slate-500">{f.symbol}</td>
+                      <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
+                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bagPrice} ريال</td>
+                      <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} ريال</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                          {formatSAR2(f.stockPrice)}
+                          <span className="mr-1 text-xs">
+                            ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
                           </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-full rounded-full" style={{ width: `${(f.marketShare / 16) * 100}%`, background: f.color }} />
+                          </div>
+                          <span className="text-xs font-bold text-slate-700">{f.marketShare}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -366,26 +347,43 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-4">
             <Card className="border-secondary/40 bg-white shadow-md">
               <CardContent className="p-5">
                 <p className="text-xs font-bold text-secondary">أقل سعر للكيس</p>
-                <p className="mt-1 text-2xl font-black text-slate-950">{formatNumber(14.5)} ريال</p>
-                <p className="mt-1 text-xs text-slate-500">لدى أساس الإعمار</p>
+                <p className="mt-1 text-2xl font-black text-slate-950">
+                  {Math.min(...CEMENT_FACTORIES.map((f) => f.bagPrice)).toFixed(2)} ريال
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {CEMENT_FACTORIES.reduce((m, f) => f.bagPrice < m.bagPrice ? f : m).name}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-primary/30 bg-white shadow-md">
               <CardContent className="p-5">
                 <p className="text-xs font-bold text-primary">متوسط الطن السائب</p>
-                <p className="mt-1 text-2xl font-black text-slate-950">{formatNumber(294)} ريال</p>
-                <p className="mt-1 text-xs text-slate-500">عبر 6 شركات سعودية</p>
+                <p className="mt-1 text-2xl font-black text-slate-950">
+                  {(CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length).toFixed(0)} ريال
+                </p>
+                <p className="mt-1 text-xs text-slate-500">عبر {CEMENT_FACTORIES.length} مصنعاً سعودياً</p>
+              </CardContent>
+            </Card>
+            <Card className="border-emerald-300 bg-white shadow-md">
+              <CardContent className="p-5">
+                <p className="text-xs font-bold text-emerald-700">أعلى حصة سوقية</p>
+                <p className="mt-1 text-2xl font-black text-slate-950">
+                  {Math.max(...CEMENT_FACTORIES.map((f) => f.marketShare)).toFixed(1)}%
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {CEMENT_FACTORIES.reduce((m, f) => f.marketShare > m.marketShare ? f : m).shortName}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-slate-200 bg-white shadow-md">
               <CardContent className="p-5">
-                <p className="text-xs font-bold text-slate-600">أسرع توصيل</p>
-                <p className="mt-1 text-2xl font-black text-slate-950">24-72 ساعة</p>
-                <p className="mt-1 text-xs text-slate-500">حسب المنطقة والكمية</p>
+                <p className="text-xs font-bold text-slate-600">إجمالي المصانع</p>
+                <p className="mt-1 text-2xl font-black text-slate-950">{CEMENT_FACTORIES.length} مصنعاً</p>
+                <p className="mt-1 text-xs text-slate-500">مدرجة في تداول</p>
               </CardContent>
             </Card>
           </div>
