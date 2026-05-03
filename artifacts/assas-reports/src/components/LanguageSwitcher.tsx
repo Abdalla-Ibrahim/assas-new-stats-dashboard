@@ -1,30 +1,33 @@
 import { useLang } from "@/contexts/LanguageContext";
 import type { Locale } from "@/i18n/translations";
 
-const LANGS: { code: Locale; flag: string; label: string }[] = [
-  { code: "ar", flag: "🇸🇦", label: "عربي" },
-  { code: "en", flag: "🇬🇧", label: "EN" },
-  { code: "zh", flag: "🇨🇳", label: "中文" },
+const LANGS: { code: Locale; label: string }[] = [
+  { code: "ar", label: "AR" },
+  { code: "en", label: "EN" },
+  { code: "zh", label: "中" },
 ];
 
 export function LanguageSwitcher() {
   const { locale, setLocale } = useLang();
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-white/15 bg-white/5 p-1">
-      {LANGS.map((l) => (
+    <div
+      className="flex items-center rounded-lg overflow-hidden border border-white/25 bg-slate-800/70 backdrop-blur-sm"
+      style={{ height: 28 }}
+    >
+      {LANGS.map((l, i) => (
         <button
           key={l.code}
           onClick={() => setLocale(l.code)}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all duration-200 ${
+          className={`h-full px-2.5 text-[11px] font-bold tracking-wider transition-all duration-150 ${
+            i > 0 ? "border-l border-white/15" : ""
+          } ${
             locale === l.code
-              ? "bg-secondary text-slate-950 shadow-sm"
-              : "text-white/70 hover:text-white hover:bg-white/10"
+              ? "bg-secondary text-slate-950"
+              : "text-white/80 hover:text-white hover:bg-white/12"
           }`}
-          aria-label={l.label}
         >
-          <span>{l.flag}</span>
-          <span className="hidden sm:inline">{l.label}</span>
+          {l.label}
         </button>
       ))}
     </div>
