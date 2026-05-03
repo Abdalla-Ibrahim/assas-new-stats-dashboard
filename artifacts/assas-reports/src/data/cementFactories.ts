@@ -230,8 +230,8 @@ export const CEMENT_FACTORIES: CementFactory[] = [
   },
   {
     id: "hcco",
-    name: "أسمنت حفر الباطن",
-    shortName: "حفر الباطن",
+    name: "أسمنت المنطقة الشرقية",
+    shortName: "الشرقية",
     symbol: "3090",
     region: "الشرقية",
     regionId: "eastern",

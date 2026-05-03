@@ -9,22 +9,21 @@ import { Truck, MapPin, Package, Calculator, Clock, Banknote } from "lucide-reac
 const ORIGINS = [
   { id: "riyadh", name: "الرياض (المقر الرئيسي)" },
   { id: "dammam", name: "الدمام (فرع التوزيع)" },
-  { id: "hafr", name: "حفر الباطن" },
 ];
 
 const DESTINATIONS: Record<string, { name: string; baseDistance: Record<string, number> }> = {
-  jeddah: { name: "جدة", baseDistance: { riyadh: 950, dammam: 1340, hafr: 1180 } },
-  makkah: { name: "مكة المكرمة", baseDistance: { riyadh: 870, dammam: 1260, hafr: 1100 } },
-  madinah: { name: "المدينة المنورة", baseDistance: { riyadh: 850, dammam: 1240, hafr: 1080 } },
-  taif: { name: "الطائف", baseDistance: { riyadh: 780, dammam: 1170, hafr: 1010 } },
-  abha: { name: "أبها", baseDistance: { riyadh: 1080, dammam: 1490, hafr: 1320 } },
-  tabuk: { name: "تبوك", baseDistance: { riyadh: 1280, dammam: 1670, hafr: 1450 } },
-  qassim: { name: "القصيم (بريدة)", baseDistance: { riyadh: 330, dammam: 720, hafr: 540 } },
-  hail: { name: "حائل", baseDistance: { riyadh: 640, dammam: 1030, hafr: 800 } },
-  jazan: { name: "جازان", baseDistance: { riyadh: 1280, dammam: 1690, hafr: 1520 } },
-  najran: { name: "نجران", baseDistance: { riyadh: 1130, dammam: 1380, hafr: 1230 } },
-  riyadhCity: { name: "داخل الرياض", baseDistance: { riyadh: 30, dammam: 410, hafr: 480 } },
-  dammamCity: { name: "داخل الدمام", baseDistance: { riyadh: 410, dammam: 30, hafr: 270 } },
+  jeddah: { name: "جدة", baseDistance: { riyadh: 950, dammam: 1340 } },
+  makkah: { name: "مكة المكرمة", baseDistance: { riyadh: 870, dammam: 1260 } },
+  madinah: { name: "المدينة المنورة", baseDistance: { riyadh: 850, dammam: 1240 } },
+  taif: { name: "الطائف", baseDistance: { riyadh: 780, dammam: 1170 } },
+  abha: { name: "أبها", baseDistance: { riyadh: 1080, dammam: 1490 } },
+  tabuk: { name: "تبوك", baseDistance: { riyadh: 1280, dammam: 1670 } },
+  qassim: { name: "القصيم (بريدة)", baseDistance: { riyadh: 330, dammam: 720 } },
+  hail: { name: "حائل", baseDistance: { riyadh: 640, dammam: 1030 } },
+  jazan: { name: "جازان", baseDistance: { riyadh: 1280, dammam: 1690 } },
+  najran: { name: "نجران", baseDistance: { riyadh: 1130, dammam: 1380 } },
+  riyadhCity: { name: "داخل الرياض", baseDistance: { riyadh: 30, dammam: 410 } },
+  dammamCity: { name: "داخل الدمام", baseDistance: { riyadh: 410, dammam: 30 } },
 };
 
 const TRUCK_TYPES = [
