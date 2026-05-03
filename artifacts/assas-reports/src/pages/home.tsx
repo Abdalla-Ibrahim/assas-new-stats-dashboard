@@ -42,27 +42,11 @@ const services = [
     accent: "#f5b800",
     bg: "from-amber-500/10 to-amber-500/5",
   },
-  {
-    title: "النقل اللوجستي",
-    description:
-      "تغطية شاملة داخل المملكة عبر أسطول تشغيلي يدعم حركة المواد والمعدات بسرعة وكفاءة حسب الموقع والكمية.",
-    icon: Truck,
-    accent: "#3b82f6",
-    bg: "from-blue-500/10 to-blue-500/5",
-  },
-  {
-    title: "قطع الغيار",
-    description:
-      "توفير قطع الغيار والفلاتر والرديترات لدعم جاهزية المعدات والمركبات وتقليل توقف الأعمال في المواقع.",
-    icon: Settings,
-    accent: "#10b981",
-    bg: "from-emerald-500/10 to-emerald-500/5",
-  },
 ];
 
 const identity = [
   "انطلقت أساس الإعمار عام 2020 لتكون شريكاً تشغيلياً موثوقاً للمقاولين والجهات التجارية.",
-  "خبرة تمتد لأكثر من 5 سنوات في الخدمات الإسمنتية واللوجستية وقطع الغيار داخل المملكة.",
+  "خبرة تمتد لأكثر من 5 سنوات في الخدمات الإسمنتية داخل المملكة.",
   "تدعم المشاريع الوطنية الكبرى وتواكب مستهدفات رؤية المملكة 2030 في تطوير البنية التحتية.",
   "يقود المؤسسة م. موسى سالم العايضي بخبرات عملية واستراتيجية داخل وخارج المنطقة.",
 ];
@@ -139,7 +123,10 @@ export default function Home() {
               {/* Main headline */}
               <h1 className="mb-6 font-black leading-[1.05] text-white">
                 <span className="block text-5xl font-extrabold tracking-wide text-secondary drop-shadow-2xl md:text-6xl xl:text-7xl">
-                  شركة أساس الإعمار
+                  مؤشر سعر الاسمنت السعودي
+                </span>
+                <span className="mt-2 block text-xl font-bold text-white/80 md:text-2xl">
+                  شركة أساس الإعمار التجارية
                 </span>
                 <span className="mt-4 block text-6xl md:text-7xl xl:text-8xl">نبني الأساس…</span>
                 <span className="block text-6xl md:text-7xl xl:text-8xl text-gradient-gold mt-2 drop-shadow-2xl">
@@ -149,7 +136,7 @@ export default function Home() {
 
               {/* Sub text */}
               <p className="mb-10 max-w-xl text-lg leading-loose text-slate-300 md:text-xl">
-                في أساس الإعمار نقدّم حلولاً متكاملة في توريد الأسمنت، الخدمات اللوجستية، وقطع الغيار داخل المملكة — بخبرة عملية تدعم المقاولين والمشاريع الوطنية الكبرى.
+                في أساس الإعمار نقدّم حلولاً متكاملة في توريد الأسمنت داخل المملكة — بخبرة عملية تدعم المقاولين والمشاريع الوطنية الكبرى.
               </p>
 
               {/* CTA buttons */}
@@ -204,7 +191,7 @@ export default function Home() {
                   <div className="space-y-4">
                     {[
                       { label: "تأسست عام", value: "2020", icon: "🗓" },
-                      { label: "قطاع العمل", value: "إسمنت · لوجستيات · غيار", icon: "⚙️" },
+                      { label: "قطاع العمل", value: "إسمنت", icon: "⚙️" },
                       { label: "التغطية الجغرافية", value: "جميع مناطق المملكة", icon: "🇸🇦" },
                       { label: "المدير التنفيذي", value: "م. موسى سالم العايضي", icon: "👤" },
                     ].map((row) => (
@@ -239,8 +226,8 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-around gap-6 text-center">
             {[
-              { val: `${(minBagPrice - 1).toFixed(0)} ريال`, label: "أقل سعر كيس" },
-              { val: `${(avgBulkPrice - 12).toFixed(0)} ريال`, label: "متوسط الطن السائب" },
+              { val: `${(minBagPrice - 3).toFixed(0)} ريال`, label: "أقل سعر كيس" },
+              { val: "13 ريال", label: "متوسط سعر الكيس" },
               { val: `${maxShare.toFixed(1)}%`, label: "أعلى حصة سوقية" },
               { val: `${CEMENT_FACTORIES.length} مصنع`, label: "المصانع المُراقبة" },
               { val: "3 مدن", label: "مواقع تشغيلية" },
@@ -285,8 +272,8 @@ export default function Home() {
           {/* Summary cards */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "أقل سعر للكيس", value: `${(minBagPrice - 1).toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
-              { label: "متوسط الطن السائب", value: `${(avgBulkPrice - 12).toFixed(0)} ريال`, sub: `عبر ${CEMENT_FACTORIES.length} مصنعاً`, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
+              { label: "أقل سعر للكيس", value: `${(minBagPrice - 2).toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
+              { label: "متوسط سعر الكيس", value: "13 ريال", sub: "مرجع تسعيري تقريبي", color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
               { label: "أعلى حصة سوقية", value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
               { label: "إجمالي المصانع", value: `${CEMENT_FACTORIES.length} مصنع`, sub: "مدرجة في تداول", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
             ].map((card) => (
