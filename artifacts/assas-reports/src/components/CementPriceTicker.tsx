@@ -41,6 +41,7 @@ export function CementPriceTicker() {
       setItems((prev) => {
         const next = [...prev];
         const old = next[idx];
+        if (!old) return prev;
         const updated = simulatePrice(old);
         next[idx] = updated;
         setFlash((f) => ({ ...f, [updated.id]: updated.direction }));

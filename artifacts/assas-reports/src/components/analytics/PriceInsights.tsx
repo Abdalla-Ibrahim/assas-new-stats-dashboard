@@ -350,7 +350,7 @@ export function PriceInsights() {
               color: "#10b981",
               label: "أدنى سعر في السوق",
               value: "13.10 ريال",
-              sub: "كيس — أسمنت السعودية",
+              sub: "كيس — الشركة السعودية للإسمنت",
             },
           ].map((ins) => {
             const Icon = ins.icon;

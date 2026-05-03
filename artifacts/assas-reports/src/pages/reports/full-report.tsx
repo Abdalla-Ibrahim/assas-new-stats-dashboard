@@ -77,13 +77,13 @@ const reportImages = [
 
 const companyRows = [
   { company: "أساس الإعمار", region: "الوسطى", production: 450, localSales: 420, exportSales: 0, totalSales: 420, clinkerInventory: 1200, marketShare: 12.5, status: "مؤشر توريد وتشغيل" },
-  { company: "أسمنت اليمامة", region: "الوسطى", production: 650, localSales: 610, exportSales: 20, totalSales: 630, clinkerInventory: 2500, marketShare: 18.2, status: "نشط" },
-  { company: "أسمنت السعودية", region: "الشرقية", production: 720, localSales: 580, exportSales: 150, totalSales: 730, clinkerInventory: 3100, marketShare: 20.1, status: "نشط" },
-  { company: "أسمنت ينبع", region: "الغربية", production: 680, localSales: 490, exportSales: 210, totalSales: 700, clinkerInventory: 2800, marketShare: 19.3, status: "نشط" },
-  { company: "أسمنت القصيم", region: "الوسطى", production: 510, localSales: 480, exportSales: 40, totalSales: 520, clinkerInventory: 1900, marketShare: 14.4, status: "نشط" },
-  { company: "أسمنت الجنوبية", region: "الجنوبية", production: 480, localSales: 460, exportSales: 15, totalSales: 475, clinkerInventory: 1600, marketShare: 13.1, status: "نشط" },
-  { company: "أسمنت الرياض", region: "الوسطى", production: 390, localSales: 201, exportSales: 0, totalSales: 201, clinkerInventory: 1456, marketShare: 6.17, status: "نشط" },
-  { company: "أسمنت الشرقية", region: "الشرقية", production: 430, localSales: 215, exportSales: 35, totalSales: 250, clinkerInventory: 1320, marketShare: 7.3, status: "نشط" },
+  { company: "شركة أسمنت اليمامة", region: "الوسطى", production: 650, localSales: 610, exportSales: 20, totalSales: 630, clinkerInventory: 2500, marketShare: 18.2, status: "نشط" },
+  { company: "الشركة السعودية للإسمنت", region: "الشرقية", production: 720, localSales: 580, exportSales: 150, totalSales: 730, clinkerInventory: 3100, marketShare: 20.1, status: "نشط" },
+  { company: "شركة أسمنت ينبع", region: "الغربية", production: 680, localSales: 490, exportSales: 210, totalSales: 700, clinkerInventory: 2800, marketShare: 19.3, status: "نشط" },
+  { company: "شركة أسمنت القصيم", region: "الوسطى", production: 510, localSales: 480, exportSales: 40, totalSales: 520, clinkerInventory: 1900, marketShare: 14.4, status: "نشط" },
+  { company: "الشركة الجنوبية للإسمنت", region: "الجنوبية", production: 480, localSales: 460, exportSales: 15, totalSales: 475, clinkerInventory: 1600, marketShare: 13.1, status: "نشط" },
+  { company: "شركة أسمنت الرياض", region: "الوسطى", production: 390, localSales: 201, exportSales: 0, totalSales: 201, clinkerInventory: 1456, marketShare: 6.17, status: "نشط" },
+  { company: "شركة أسمنت الشرقية", region: "الشرقية", production: 430, localSales: 215, exportSales: 35, totalSales: 250, clinkerInventory: 1320, marketShare: 7.3, status: "نشط" },
 ];
 
 const periodSales = [
@@ -94,16 +94,16 @@ const periodSales = [
 
 const monthlySales = [
   { company: "أساس الإعمار", months: [420, 398, 376, 355, 342, 331, 318, 309, 295, 281, 264, 250, 238] },
-  { company: "أسمنت اليمامة", months: [499, 472, 468, 451, 430, 425, 410, 396, 378, 365, 350, 338, 321] },
-  { company: "أسمنت السعودية", months: [371, 390, 405, 412, 420, 415, 401, 392, 385, 379, 366, 350, 342] },
-  { company: "أسمنت الرياض", months: [201, 262, 373, 380, 327, 299, 273, 276, 246, 231, 293, 267, 256] },
+  { company: "شركة أسمنت اليمامة", months: [499, 472, 468, 451, 430, 425, 410, 396, 378, 365, 350, 338, 321] },
+  { company: "الشركة السعودية للإسمنت", months: [371, 390, 405, 412, 420, 415, 401, 392, 385, 379, 366, 350, 342] },
+  { company: "شركة أسمنت الرياض", months: [201, 262, 373, 380, 327, 299, 273, 276, 246, 231, 293, 267, 256] },
 ];
 
 const clinkerRows = [
   { company: "أساس الإعمار", start: 357, produced: 679, bought: 323, soldLocal: 420, exported: 0, end: 1200 },
-  { company: "أسمنت اليمامة", start: 969, produced: 1747, bought: 1012, soldLocal: 610, exported: 20, end: 2500 },
-  { company: "أسمنت السعودية", start: 1120, produced: 1880, bought: 650, soldLocal: 580, exported: 150, end: 3100 },
-  { company: "أسمنت ينبع", start: 980, produced: 1650, bought: 540, soldLocal: 490, exported: 210, end: 2800 },
+  { company: "شركة أسمنت اليمامة", start: 969, produced: 1747, bought: 1012, soldLocal: 610, exported: 20, end: 2500 },
+  { company: "الشركة السعودية للإسمنت", start: 1120, produced: 1880, bought: 650, soldLocal: 580, exported: 150, end: 3100 },
+  { company: "شركة أسمنت ينبع", start: 980, produced: 1650, bought: 540, soldLocal: 490, exported: 210, end: 2800 },
 ];
 
 const locations = [
