@@ -267,7 +267,7 @@ export function MarketIntelligence() {
                 </div>
                 <div className="flex items-center justify-between text-slate-300">
                   <span className="text-slate-500">سعر الطن</span>
-                  <span className="font-bold">{f.bulkPrice} ريال</span>
+                  <span className="font-bold">{f.bagPrice * 20} ريال</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">الحالة</span>
