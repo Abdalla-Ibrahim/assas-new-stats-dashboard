@@ -32,7 +32,7 @@ const fmt = (n: number) => n.toFixed(2);
 
 export function CementPriceTicker() {
   const [items, setItems] = useState<TickerItem[]>(getInitialItems);
-  const [flash, setFlash] = useState<Record<string, "up" | "down" | null>>({});
+  const [flash, setFlash] = useState<Record<string, "up" | "down" | "flat" | null>>({});
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
