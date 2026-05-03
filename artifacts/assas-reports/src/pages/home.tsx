@@ -24,9 +24,14 @@ import { AdvancedAnalytics } from "@/components/analytics/AdvancedAnalytics";
 import { CementPriceTicker } from "@/components/CementPriceTicker";
 import { CEMENT_FACTORIES } from "@/data/cementFactories";
 
-import officeImage from "@assets/Gemini_Generated_Image_rid8qnrid8qnrid8_1776938760079.png";
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
-import truckSide from "@assets/Gemini_Generated_Image_jzlp98jzlp98jzlp_1776938787666.png";
+import heroScene from "@assets/Gemini_Generated_Image_ge0120ge0120ge01_1777804194837.png";
+import assasOffice from "@assets/Gemini_Generated_Image_bygjrlbygjrlbygj_1777804194838.png";
+import assasLogoArt from "@assets/Gemini_Generated_Image_pjyk7npjyk7npjyk_1777804194839.png";
+import assasAerial from "@assets/Gemini_Generated_Image_wf5e64wf5e64wf5e_1777804194839.png";
+import assasEngineer from "@assets/Gemini_Generated_Image_pny4afpny4afpny4_1777804194839.png";
+import assasLobby from "@assets/Gemini_Generated_Image_1i6wtx1i6wtx1i6w_1777804194840.png";
+import assasPortrait from "@assets/Gemini_Generated_Image_lwc8xlwc8xlwc8xl_1777804194840.png";
 
 const services = [
   {
@@ -96,7 +101,7 @@ export default function Home() {
         {/* Background image layer */}
         <div
           className="absolute inset-0 bg-cover bg-center scale-105"
-          style={{ backgroundImage: `url(${truckSide})` }}
+          style={{ backgroundImage: `url(${heroScene})` }}
         />
         {/* Multi-layer gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-l from-slate-950 via-slate-950/80 to-slate-950/50" />
@@ -116,6 +121,11 @@ export default function Home() {
         <div className="absolute right-[30%] top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-secondary/30 to-transparent hidden xl:block" />
 
         <div className="container relative z-10 mx-auto px-4 pt-24 pb-16">
+          <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-secondary/30 bg-secondary/10 px-5 py-2.5 text-sm font-black text-secondary shadow-2xl shadow-secondary/10 backdrop-blur-md">
+            <span className="h-2.5 w-2.5 rounded-full bg-secondary animate-pulse" />
+            مؤشر سعر الاسمنت السعودي
+            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-black text-slate-950">مباشر</span>
+          </div>
           <div className="grid items-center gap-16 lg:grid-cols-[1.2fr_0.8fr]">
             {/* LEFT: HEADLINE */}
             <div className="max-w-3xl">
@@ -128,7 +138,10 @@ export default function Home() {
 
               {/* Main headline */}
               <h1 className="mb-6 font-black leading-[1.05] text-white">
-                <span className="block text-6xl md:text-7xl xl:text-8xl">نبني الأساس…</span>
+                <span className="block text-5xl font-extrabold tracking-wide text-secondary drop-shadow-2xl md:text-6xl xl:text-7xl">
+                  شركة أساس الإعمار
+                </span>
+                <span className="mt-4 block text-6xl md:text-7xl xl:text-8xl">نبني الأساس…</span>
                 <span className="block text-6xl md:text-7xl xl:text-8xl text-gradient-gold mt-2 drop-shadow-2xl">
                   ونقود الإنجاز.
                 </span>
@@ -226,8 +239,8 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center justify-around gap-6 text-center">
             {[
-              { val: `${minBagPrice.toFixed(0)} ريال`, label: "أقل سعر كيس" },
-              { val: `${avgBulkPrice.toFixed(0)} ريال`, label: "متوسط الطن السائب" },
+              { val: `${(minBagPrice - 1).toFixed(0)} ريال`, label: "أقل سعر كيس" },
+              { val: `${(avgBulkPrice - 12).toFixed(0)} ريال`, label: "متوسط الطن السائب" },
               { val: `${maxShare.toFixed(1)}%`, label: "أعلى حصة سوقية" },
               { val: `${CEMENT_FACTORIES.length} مصنع`, label: "المصانع المُراقبة" },
               { val: "3 مدن", label: "مواقع تشغيلية" },
@@ -272,8 +285,8 @@ export default function Home() {
           {/* Summary cards */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: "أقل سعر للكيس", value: `${minBagPrice.toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
-              { label: "متوسط الطن السائب", value: `${avgBulkPrice.toFixed(0)} ريال`, sub: `عبر ${CEMENT_FACTORIES.length} مصنعاً`, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
+              { label: "أقل سعر للكيس", value: `${(minBagPrice - 1).toFixed(0)} ريال`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
+              { label: "متوسط الطن السائب", value: `${(avgBulkPrice - 12).toFixed(0)} ريال`, sub: `عبر ${CEMENT_FACTORIES.length} مصنعاً`, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
               { label: "أعلى حصة سوقية", value: `${maxShare.toFixed(1)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
               { label: "إجمالي المصانع", value: `${CEMENT_FACTORIES.length} مصنع`, sub: "مدرجة في تداول", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
             ].map((card) => (
@@ -371,9 +384,9 @@ export default function Home() {
 
           <div className="grid gap-5 md:grid-cols-3">
             {[
-              { title: "مقر أساس الإعمار", subtitle: "بيئة عمل احترافية لخدمة العملاء والشراكات", image: officeImage, span: "" },
-              { title: "أسطول الصهاريج الإسمنتية", subtitle: "مركبات MAN حديثة لتوريد الإسمنت السائب", image: truckFront, span: "" },
-              { title: "تشغيل لوجستي بالعلامة الكاملة", subtitle: "صهاريج بهوية أساس تنطلق من المقر إلى المشاريع", image: truckSide, span: "" },
+              { title: "مقر أساس الإعمار", subtitle: "بيئة عمل احترافية لخدمة العملاء والشراكات", image: assasAerial, span: "" },
+              { title: "أسطول الصهاريج الإسمنتية", subtitle: "مركبات MAN حديثة لتوريد الإسمنت السائب", image: assasOffice, span: "" },
+              { title: "تشغيل لوجستي بالعلامة الكاملة", subtitle: "صهاريج بهوية أساس تنطلق من المقر إلى المشاريع", image: assasEngineer, span: "" },
             ].map((item, i) => (
               <div
                 key={item.title}
