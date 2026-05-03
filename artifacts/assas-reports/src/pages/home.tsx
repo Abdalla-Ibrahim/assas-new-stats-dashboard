@@ -119,6 +119,7 @@ export default function Home() {
         {/* Multi-layer gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-l from-slate-950 via-slate-950/80 to-slate-950/50" />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/70" />
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-slate-950 via-slate-950/70 to-transparent" />
 
         {/* Geometric decorations */}
         <div className="absolute right-0 top-0 h-full w-1/3 overflow-hidden">
@@ -481,26 +482,25 @@ export default function Home() {
             ].map((item, i) => (
               <div
                 key={item.title}
-                className="group relative overflow-hidden rounded-3xl border border-white/8 shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-secondary/10 hover:border-secondary/30"
+                className="group relative overflow-hidden rounded-[28px] border border-white/12 bg-slate-900/40 shadow-[0_24px_80px_rgba(0,0,0,0.55)] transition-all duration-500 hover:-translate-y-2 hover:border-secondary/35 hover:shadow-[0_30px_90px_rgba(245,184,0,0.16)]"
               >
-                <div className="h-72 overflow-hidden">
+                <div className="relative h-80 overflow-hidden">
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="h-full w-full object-cover scale-105 transition-transform duration-700 group-hover:scale-115"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/15 to-transparent" />
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/5" />
                 </div>
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-6">
-                  <div className="inline-block mb-2 rounded-full bg-secondary/20 px-3 py-0.5 text-xs font-bold text-secondary">
+                  <div className="mb-2 inline-block rounded-full bg-secondary/20 px-3 py-0.5 text-xs font-bold text-secondary backdrop-blur-sm">
                     {i === 0 ? "المقر الرئيسي" : i === 1 ? "الأسطول" : "التشغيل"}
                   </div>
-                  <h3 className="text-xl font-black text-white">{item.title}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{item.subtitle}</p>
+                  <h3 className="text-2xl font-black text-white drop-shadow-lg">{item.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-300">{item.subtitle}</p>
                 </div>
-                {/* Hover glow */}
-                <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-secondary/0 transition-all duration-300 group-hover:ring-secondary/30" />
+                <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-secondary/0 transition-all duration-300 group-hover:ring-secondary/35" />
               </div>
             ))}
           </div>
