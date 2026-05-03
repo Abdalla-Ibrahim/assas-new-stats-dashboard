@@ -198,7 +198,7 @@ export function PriceInsights() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
               <XAxis
                 type="number"
-                domain={[255, 340]}
+              domain={[190, 220]}
                 tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
@@ -262,7 +262,7 @@ export function PriceInsights() {
                       <td className="py-2.5 font-black" style={{ color: priceColor(f.bagPrice) }}>
                         {f.bagPrice.toFixed(2)}﷼
                       </td>
-                      <td className="py-2.5 text-slate-300">{f.bagPrice * 20}﷼</td>
+                      <td className="py-2.5 text-slate-300">{f.bulkPrice}﷼</td>
                       <td className="py-2.5">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-black ${

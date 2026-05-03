@@ -505,7 +505,7 @@ export function AdvancedAnalytics() {
                   </thead>
                   <tbody>
                     {[...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice).map((f) => {
-                      const impliedBulk = f.bagPrice * 20;
+                      const impliedBulk = f.bulkPrice;
                       const diff = ((f.bulkPrice - impliedBulk) / impliedBulk * 100).toFixed(1);
                       return (
                         <tr key={f.id} className="border-b border-white/5 hover:bg-white/4">
