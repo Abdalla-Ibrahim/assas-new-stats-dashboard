@@ -29,7 +29,7 @@ export function Navbar() {
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
         scrolled
           ? "border-b border-white/8 bg-slate-950/92 shadow-2xl shadow-black/40 backdrop-blur-2xl"
-          : "bg-transparent"
+          : "bg-slate-950/95 backdrop-blur-sm"
       }`}
       data-testid="nav-main"
     >
@@ -45,7 +45,7 @@ export function Navbar() {
           </div>
           <div className="hidden leading-tight sm:block">
             <span className="block text-lg font-black tracking-tight text-white drop-shadow">{t.idCard.name}</span>
-            <span className="block text-[10px] font-bold tracking-widest text-secondary/90 uppercase">{t.footer.tagline}</span>
+            <span className="block text-[10px] font-bold tracking-widest text-secondary/90 uppercase">مؤشر سعر الاسمنت السعودي</span>
           </div>
         </Link>
 
