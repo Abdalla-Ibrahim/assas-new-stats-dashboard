@@ -44,8 +44,8 @@ export function Navbar() {
             <div className="absolute inset-0 rounded-2xl bg-secondary/10 opacity-0 transition-opacity group-hover:opacity-100" />
           </div>
           <div className="hidden leading-tight sm:block">
-            <span className="block text-lg font-black tracking-tight text-white drop-shadow">{t.idCard.name}</span>
-            <span className="block text-[10px] font-bold tracking-widest text-secondary/90 uppercase">مؤشر سعر الاسمنت السعودي</span>
+            <span className="block text-lg font-black tracking-tight text-secondary drop-shadow">مؤشر أسعار الإسمنت السعودي</span>
+            <span className="block text-[10px] font-bold tracking-widest text-white/90 uppercase">شركة أساس الإعمار</span>
           </div>
         </Link>
 
