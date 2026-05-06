@@ -529,7 +529,11 @@ export function SaudiMap() {
                       </div>
                       <div className="mt-0.5 flex justify-between text-[10px] text-slate-500">
                         <span>طاقة: {formatNumber(f.capacity)} ألف طن</span>
-                        <span>السهم: {f.stockPrice} ريال ({f.change >= 0 ? "+" : ""}{f.changePct}%)</span>
+                        <span>
+                          {f.listed
+                            ? `السهم: ${f.stockPrice} ريال (${f.change >= 0 ? "+" : ""}${f.changePct}%)`
+                            : "شركة غير مدرجة"}
+                        </span>
                       </div>
                     </div>
                   );

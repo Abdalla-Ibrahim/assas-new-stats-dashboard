@@ -7,18 +7,18 @@ type TickerItem = CementFactory & { currentPrice: number; currentChange: number;
 function getInitialItems(): TickerItem[] {
   return CEMENT_FACTORIES.map((f) => ({
     ...f,
-    currentPrice: f.stockPrice,
-    currentChange: f.change,
-    currentPct: f.changePct,
-    direction: f.change > 0 ? "up" : f.change < 0 ? "down" : "flat",
+    currentPrice: f.bagPrice,
+    currentChange: 0,
+    currentPct: 0,
+    direction: "flat",
   }));
 }
 
 function simulatePrice(item: TickerItem): TickerItem {
-  const delta = (Math.random() - 0.49) * 0.12;
+  const delta = (Math.random() - 0.49) * 0.08;
   const newPrice = Math.max(5, parseFloat((item.currentPrice + delta).toFixed(2)));
-  const newChange = parseFloat((newPrice - item.stockPrice).toFixed(2));
-  const newPct = parseFloat(((newChange / item.stockPrice) * 100).toFixed(2));
+  const newChange = parseFloat((newPrice - item.bagPrice).toFixed(2));
+  const newPct = parseFloat(((newChange / item.bagPrice) * 100).toFixed(2));
   return {
     ...item,
     currentPrice: newPrice,

@@ -75,36 +75,61 @@ const reportImages = [
   { src: truckSide, label: "تشغيل لوجستي" },
 ];
 
-const companyRows = [
-  { company: "أساس الإعمار", region: "الوسطى", production: 450, localSales: 420, exportSales: 0, totalSales: 420, clinkerInventory: 1200, marketShare: 12.5, status: "مؤشر توريد وتشغيل" },
-  { company: "شركة أسمنت اليمامة", region: "الوسطى", production: 650, localSales: 610, exportSales: 20, totalSales: 630, clinkerInventory: 2500, marketShare: 18.2, status: "نشط" },
-  { company: "الشركة السعودية للإسمنت", region: "الشرقية", production: 720, localSales: 580, exportSales: 150, totalSales: 730, clinkerInventory: 3100, marketShare: 20.1, status: "نشط" },
-  { company: "شركة أسمنت ينبع", region: "الغربية", production: 680, localSales: 490, exportSales: 210, totalSales: 700, clinkerInventory: 2800, marketShare: 19.3, status: "نشط" },
-  { company: "شركة أسمنت القصيم", region: "الوسطى", production: 510, localSales: 480, exportSales: 40, totalSales: 520, clinkerInventory: 1900, marketShare: 14.4, status: "نشط" },
-  { company: "الشركة الجنوبية للإسمنت", region: "الجنوبية", production: 480, localSales: 460, exportSales: 15, totalSales: 475, clinkerInventory: 1600, marketShare: 13.1, status: "نشط" },
-  { company: "شركة أسمنت الرياض", region: "الوسطى", production: 390, localSales: 201, exportSales: 0, totalSales: 201, clinkerInventory: 1456, marketShare: 6.17, status: "نشط" },
-  { company: "شركة أسمنت الشرقية", region: "الشرقية", production: 430, localSales: 215, exportSales: 35, totalSales: 250, clinkerInventory: 1320, marketShare: 7.3, status: "نشط" },
-];
+const companyRows = CEMENT_FACTORIES.map((factory) => {
+  const production = Math.round(factory.production2024 / 12);
+  const exportSales = factory.regionId === "eastern" || factory.regionId === "madinah" ? Math.round(production * 0.12) : Math.round(production * 0.04);
+  const localSales = Math.round(production * 0.82);
+  return {
+    company: factory.name,
+    region: factory.region,
+    production,
+    localSales,
+    exportSales,
+    totalSales: localSales + exportSales,
+    clinkerInventory: Math.round(factory.production2024 * 0.32),
+    marketShare: factory.marketShare,
+    status: "نشط",
+  };
+});
+
+const totalLocalSales = companyRows.reduce((sum, row) => sum + row.localSales, 0);
+const totalExportSales = companyRows.reduce((sum, row) => sum + row.exportSales, 0);
+const totalSales = totalLocalSales + totalExportSales;
 
 const periodSales = [
-  { item: "المبيعات المحلية", first: 3453, second: 3258, change: -6 },
-  { item: "مبيعات التصدير", first: 158, second: 110, change: -30 },
-  { item: "الإجمالي", first: 3611, second: 3368, change: -7 },
+  { item: "المبيعات المحلية", first: totalLocalSales, second: Math.round(totalLocalSales * 0.94), change: -6 },
+  { item: "مبيعات التصدير", first: totalExportSales, second: Math.round(totalExportSales * 0.7), change: -30 },
+  { item: "الإجمالي", first: totalSales, second: Math.round(totalSales * 0.93), change: -7 },
 ];
 
-const monthlySales = [
-  { company: "أساس الإعمار", months: [420, 398, 376, 355, 342, 331, 318, 309, 295, 281, 264, 250, 238] },
-  { company: "شركة أسمنت اليمامة", months: [499, 472, 468, 451, 430, 425, 410, 396, 378, 365, 350, 338, 321] },
-  { company: "الشركة السعودية للإسمنت", months: [371, 390, 405, 412, 420, 415, 401, 392, 385, 379, 366, 350, 342] },
-  { company: "شركة أسمنت الرياض", months: [201, 262, 373, 380, 327, 299, 273, 276, 246, 231, 293, 267, 256] },
-];
+const monthlySales = [...CEMENT_FACTORIES]
+  .sort((a, b) => b.marketShare - a.marketShare)
+  .slice(0, 4)
+  .map((factory, index) => {
+    const base = Math.round(factory.production2024 / 12);
+    return {
+      company: factory.name,
+      months: Array.from({ length: 13 }, (_, monthIndex) => Math.max(1, Math.round(base * (1 - monthIndex * 0.018 + index * 0.006)))),
+    };
+  });
 
-const clinkerRows = [
-  { company: "أساس الإعمار", start: 357, produced: 679, bought: 323, soldLocal: 420, exported: 0, end: 1200 },
-  { company: "شركة أسمنت اليمامة", start: 969, produced: 1747, bought: 1012, soldLocal: 610, exported: 20, end: 2500 },
-  { company: "الشركة السعودية للإسمنت", start: 1120, produced: 1880, bought: 650, soldLocal: 580, exported: 150, end: 3100 },
-  { company: "شركة أسمنت ينبع", start: 980, produced: 1650, bought: 540, soldLocal: 490, exported: 210, end: 2800 },
-];
+const clinkerRows = [...CEMENT_FACTORIES]
+  .sort((a, b) => b.production2024 - a.production2024)
+  .slice(0, 4)
+  .map((factory) => {
+    const produced = Math.round(factory.production2024 * 0.28);
+    const soldLocal = Math.round(factory.production2024 * 0.1);
+    const exported = factory.regionId === "eastern" || factory.regionId === "madinah" ? Math.round(factory.production2024 * 0.03) : Math.round(factory.production2024 * 0.01);
+    return {
+      company: factory.name,
+      start: Math.round(factory.production2024 * 0.16),
+      produced,
+      bought: Math.round(factory.production2024 * 0.08),
+      soldLocal,
+      exported,
+      end: Math.round(factory.production2024 * 0.32),
+    };
+  });
 
 const locations = [
   { city: "الرياض", role: "المقر الرئيسي", address: "شارع الصناعة، الرياض — صندوق بريد: 12345" },

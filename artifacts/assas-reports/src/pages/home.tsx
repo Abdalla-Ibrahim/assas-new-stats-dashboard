@@ -377,12 +377,18 @@ export default function Home() {
                         </td>
                         <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} {t.priceTable.sar}</td>
                         <td className="px-5 py-3.5">
-                          <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                            {formatSAR2(f.stockPrice)}
-                            <span className="mr-1 text-xs opacity-80">
-                              ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
+                          {f.listed ? (
+                            <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                              {formatSAR2(f.stockPrice)}
+                              <span className="mr-1 text-xs opacity-80">
+                                ({f.change >= 0 ? "+" : ""}{formatSAR2(f.changePct)}%)
+                              </span>
                             </span>
-                          </span>
+                          ) : (
+                            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">
+                              {locale === "en" ? "Private" : locale === "zh" ? "未上市" : "غير مدرجة"}
+                            </span>
+                          )}
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">

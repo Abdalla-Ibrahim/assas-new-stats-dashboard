@@ -17,7 +17,7 @@ import {
 } from "recharts";
 import { TrendingDown, TrendingUp, Minus, AlertCircle, CheckCircle2, Award } from "lucide-react";
 
-const AVG_BAG = 13;
+const AVG_BAG = CEMENT_FACTORIES.reduce((s, f) => s + f.bagPrice, 0) / CEMENT_FACTORIES.length;
 const AVG_BULK = CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length;
 
 const sorted = [...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice);
@@ -349,8 +349,8 @@ export function PriceInsights() {
               icon: CheckCircle2,
               color: "#10b981",
               label: "أدنى سعر في السوق",
-              value: "13.10 ريال",
-              sub: "كيس — الشركة السعودية للإسمنت",
+              value: `${sorted[0].bagPrice.toFixed(2)} ريال`,
+              sub: `كيس — ${sorted[0].name}`,
             },
           ].map((ins) => {
             const Icon = ins.icon;

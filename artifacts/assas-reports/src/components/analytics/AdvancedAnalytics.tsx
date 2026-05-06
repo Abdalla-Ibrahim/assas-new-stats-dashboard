@@ -122,6 +122,7 @@ const priceCompare = [...CEMENT_FACTORIES]
 
 /* Stock price performance */
 const stockData = [...CEMENT_FACTORIES]
+  .filter((f) => f.listed)
   .sort((a, b) => b.changePct - a.changePct)
   .slice(0, 10)
   .map((f) => ({ name: f.shortName, change: f.changePct, price: f.stockPrice, color: f.color }));
@@ -763,7 +764,7 @@ export function AdvancedAnalytics() {
                   <YAxis yAxisId="right" orientation="right" domain={[1950, 2020]} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Bar yAxisId="left" dataKey="موظفون" radius={[4, 4, 0, 0]} maxBarSize={36}>
-                    {CEMENT_FACTORIES.sort((a, b) => b.employees - a.employees).map((f, i) => <Cell key={i} fill={f.color} />)}
+                    {[...CEMENT_FACTORIES].sort((a, b) => b.employees - a.employees).map((f, i) => <Cell key={i} fill={f.color} />)}
                   </Bar>
                   <Line yAxisId="right" type="monotone" dataKey="تأسيس" stroke="#f5b800" strokeWidth={2} dot={{ fill: "#f5b800", r: 3, strokeWidth: 0 }} />
                   <Legend formatter={(v) => <span style={{ color: "#e2e8f0", fontFamily: "Cairo,sans-serif", fontSize: 11 }}>{v}</span>} />

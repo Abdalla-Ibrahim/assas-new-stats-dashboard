@@ -24,7 +24,7 @@ import {
   BarChart2,
 } from "lucide-react";
 
-const AVG_BAG = 13;
+const AVG_BAG = CEMENT_FACTORIES.reduce((s, f) => s + f.bagPrice, 0) / CEMENT_FACTORIES.length;
 const AVG_BULK = Math.round(CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length);
 
 /* Buy Signal: cheaper price + high util = buy signal */
@@ -76,7 +76,7 @@ const generateHistory = (base: number, n: number) => {
   return arr;
 };
 
-const priceHistory = generateHistory(14.8, 29);
+const priceHistory = generateHistory(AVG_BAG, 29);
 const volumeHistory = generateHistory(15200, 29);
 
 /* Top buy opportunities */
@@ -91,11 +91,11 @@ const allWithSig = [...CEMENT_FACTORIES]
   .sort((a, b) => b.score - a.score);
 
 export function MarketIntelligence() {
-  const priceIndex = useIndexSimulator(14.8, 0.08);
+  const priceIndex = useIndexSimulator(AVG_BAG, 0.08);
   const demandIndex = useIndexSimulator(78, 1.2);
   const supplySurplus = useIndexSimulator(112, 1.8);
 
-  const priceChange = ((priceIndex - 14.8) / 14.8 * 100).toFixed(2);
+  const priceChange = ((priceIndex - AVG_BAG) / AVG_BAG * 100).toFixed(2);
   const isUp = parseFloat(priceChange) >= 0;
 
   return (
