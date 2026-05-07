@@ -35,7 +35,7 @@ import {
   Line,
   Legend,
 } from "recharts";
-import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useCementFactories } from "@/contexts/FactoriesContext";
 
 const YEARS = Array.from({ length: 27 }, (_, index) => String(2026 - index));
 const MONTHS = [
@@ -75,62 +75,6 @@ const reportImages = [
   { src: truckSide, label: "تشغيل لوجستي" },
 ];
 
-const companyRows = CEMENT_FACTORIES.map((factory) => {
-  const production = Math.round(factory.production2024 / 12);
-  const exportSales = factory.regionId === "eastern" || factory.regionId === "madinah" ? Math.round(production * 0.12) : Math.round(production * 0.04);
-  const localSales = Math.round(production * 0.82);
-  return {
-    company: factory.name,
-    region: factory.region,
-    production,
-    localSales,
-    exportSales,
-    totalSales: localSales + exportSales,
-    clinkerInventory: Math.round(factory.production2024 * 0.32),
-    marketShare: factory.marketShare,
-    status: "نشط",
-  };
-});
-
-const totalLocalSales = companyRows.reduce((sum, row) => sum + row.localSales, 0);
-const totalExportSales = companyRows.reduce((sum, row) => sum + row.exportSales, 0);
-const totalSales = totalLocalSales + totalExportSales;
-
-const periodSales = [
-  { item: "المبيعات المحلية", first: totalLocalSales, second: Math.round(totalLocalSales * 0.94), change: -6 },
-  { item: "مبيعات التصدير", first: totalExportSales, second: Math.round(totalExportSales * 0.7), change: -30 },
-  { item: "الإجمالي", first: totalSales, second: Math.round(totalSales * 0.93), change: -7 },
-];
-
-const monthlySales = [...CEMENT_FACTORIES]
-  .sort((a, b) => b.marketShare - a.marketShare)
-  .slice(0, 4)
-  .map((factory, index) => {
-    const base = Math.round(factory.production2024 / 12);
-    return {
-      company: factory.name,
-      months: Array.from({ length: 13 }, (_, monthIndex) => Math.max(1, Math.round(base * (1 - monthIndex * 0.018 + index * 0.006)))),
-    };
-  });
-
-const clinkerRows = [...CEMENT_FACTORIES]
-  .sort((a, b) => b.production2024 - a.production2024)
-  .slice(0, 4)
-  .map((factory) => {
-    const produced = Math.round(factory.production2024 * 0.28);
-    const soldLocal = Math.round(factory.production2024 * 0.1);
-    const exported = factory.regionId === "eastern" || factory.regionId === "madinah" ? Math.round(factory.production2024 * 0.03) : Math.round(factory.production2024 * 0.01);
-    return {
-      company: factory.name,
-      start: Math.round(factory.production2024 * 0.16),
-      produced,
-      bought: Math.round(factory.production2024 * 0.08),
-      soldLocal,
-      exported,
-      end: Math.round(factory.production2024 * 0.32),
-    };
-  });
-
 const locations = [
   { city: "الرياض", role: "المقر الرئيسي", address: "شارع الصناعة، الرياض — صندوق بريد: 12345" },
   { city: "الدمام", role: "فرع التوزيع", address: "المنطقة الصناعية، الدمام" },
@@ -157,6 +101,7 @@ function ChangeBadge({ value }: { value: number }) {
 }
 
 export default function FullReport() {
+  const { factories } = useCementFactories();
   const [firstYear, setFirstYear] = useState("2025");
   const [firstMonth, setFirstMonth] = useState("مارس");
   const [secondYear, setSecondYear] = useState("2026");
@@ -165,10 +110,75 @@ export default function FullReport() {
   const [reportType, setReportType] = useState("الكل");
   const [isLoading, setIsLoading] = useState(false);
 
+  const companyRows = useMemo(
+    () =>
+      factories.map((factory) => {
+        const production = Math.round(factory.production2024 / 12);
+        const exportSales =
+          factory.regionId === "eastern" || factory.regionId === "madinah"
+            ? Math.round(production * 0.12)
+            : Math.round(production * 0.04);
+        const localSales = Math.round(production * 0.82);
+        return {
+          company: factory.name,
+          region: factory.region,
+          production,
+          localSales,
+          exportSales,
+          totalSales: localSales + exportSales,
+          clinkerInventory: Math.round(factory.production2024 * 0.32),
+          marketShare: factory.marketShare,
+          status: "نشط",
+        };
+      }),
+    [factories],
+  );
+
+  const totalLocalSales = companyRows.reduce((sum, row) => sum + row.localSales, 0);
+  const totalExportSales = companyRows.reduce((sum, row) => sum + row.exportSales, 0);
+  const totalSales = totalLocalSales + totalExportSales;
+  const periodSales = [
+    { item: "المبيعات المحلية", first: totalLocalSales, second: Math.round(totalLocalSales * 0.94), change: -6 },
+    { item: "مبيعات التصدير", first: totalExportSales, second: Math.round(totalExportSales * 0.7), change: -30 },
+    { item: "الإجمالي", first: totalSales, second: Math.round(totalSales * 0.93), change: -7 },
+  ];
+  const monthlySales = [...factories]
+    .sort((a, b) => b.marketShare - a.marketShare)
+    .slice(0, 4)
+    .map((factory, index) => {
+      const base = Math.round(factory.production2024 / 12);
+      return {
+        company: factory.name,
+        months: Array.from({ length: 13 }, (_, monthIndex) =>
+          Math.max(1, Math.round(base * (1 - monthIndex * 0.018 + index * 0.006))),
+        ),
+      };
+    });
+  const clinkerRows = [...factories]
+    .sort((a, b) => b.production2024 - a.production2024)
+    .slice(0, 4)
+    .map((factory) => {
+      const produced = Math.round(factory.production2024 * 0.28);
+      const soldLocal = Math.round(factory.production2024 * 0.1);
+      const exported =
+        factory.regionId === "eastern" || factory.regionId === "madinah"
+          ? Math.round(factory.production2024 * 0.03)
+          : Math.round(factory.production2024 * 0.01);
+      return {
+        company: factory.name,
+        start: Math.round(factory.production2024 * 0.16),
+        produced,
+        bought: Math.round(factory.production2024 * 0.08),
+        soldLocal,
+        exported,
+        end: Math.round(factory.production2024 * 0.32),
+      };
+    });
+
   const filteredRows = useMemo(() => {
     if (region === "الكل") return companyRows;
     return companyRows.filter((row) => `المنطقة ${row.region}` === region);
-  }, [region]);
+  }, [companyRows, region]);
 
   const totals = useMemo(
     () =>
@@ -495,10 +505,10 @@ export default function FullReport() {
                 fontFamily: "Cairo,Tajawal,sans-serif",
                 fontSize: 12,
               };
-              const sortedByBag = [...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice);
-              const sortedByBulk = [...CEMENT_FACTORIES].sort((a, b) => a.bulkPrice - b.bulkPrice);
+              const sortedByBag = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
+              const sortedByBulk = [...factories].sort((a, b) => a.bulkPrice - b.bulkPrice);
               const avgBag = 13;
-              const avgBulk = Math.round(CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length);
+              const avgBulk = Math.round(factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length);
               const priceColor = (p: number) =>
                 p <= avgBag + 0.5 ? "#10b981" : p <= avgBag + 2 ? "#f5b800" : "#ef4444";
               const trendData = [

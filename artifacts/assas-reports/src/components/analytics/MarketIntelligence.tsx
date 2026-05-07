@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useEffect, useMemo, useState } from "react";
+import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -24,11 +24,8 @@ import {
   BarChart2,
 } from "lucide-react";
 
-const AVG_BAG = CEMENT_FACTORIES.reduce((s, f) => s + f.bagPrice, 0) / CEMENT_FACTORIES.length;
-const AVG_BULK = Math.round(CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length);
-
 /* Buy Signal: cheaper price + high util = buy signal */
-function buySignal(f: typeof CEMENT_FACTORIES[0]): { score: number; label: string; color: string; bg: string } {
+function buySignal(f: CementFactory): { score: number; label: string; color: string; bg: string } {
   const priceScore = Math.max(0, (17 - f.bagPrice) * 15);
   const utilScore = Math.round((f.production2024 / f.capacity) * 30);
   const shareScore = Math.min(20, f.marketShare);
@@ -76,21 +73,18 @@ const generateHistory = (base: number, n: number) => {
   return arr;
 };
 
-const priceHistory = generateHistory(AVG_BAG, 29);
-const volumeHistory = generateHistory(15200, 29);
-
-/* Top buy opportunities */
-const buyOpps = [...CEMENT_FACTORIES]
-  .map((f) => ({ ...f, sig: buySignal(f) }))
-  .sort((a, b) => b.sig.score - a.sig.score)
-  .slice(0, 6);
-
-/* Sorted for radar-style bar */
-const allWithSig = [...CEMENT_FACTORIES]
-  .map((f) => ({ name: f.shortName, score: buySignal(f).score, bagPrice: f.bagPrice, color: f.color, sig: buySignal(f) }))
-  .sort((a, b) => b.score - a.score);
-
 export function MarketIntelligence() {
+  const { factories } = useCementFactories();
+  const AVG_BAG = factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length;
+  const priceHistory = useMemo(() => generateHistory(AVG_BAG, 29), [AVG_BAG]);
+  const volumeHistory = useMemo(() => generateHistory(15200, 29), []);
+  const buyOpps = [...factories]
+    .map((f) => ({ ...f, sig: buySignal(f) }))
+    .sort((a, b) => b.sig.score - a.sig.score)
+    .slice(0, 6);
+  const allWithSig = [...factories]
+    .map((f) => ({ name: f.shortName, score: buySignal(f).score, bagPrice: f.bagPrice, color: f.color, sig: buySignal(f) }))
+    .sort((a, b) => b.score - a.score);
   const priceIndex = useIndexSimulator(AVG_BAG, 0.08);
   const demandIndex = useIndexSimulator(78, 1.2);
   const supplySurplus = useIndexSimulator(112, 1.8);

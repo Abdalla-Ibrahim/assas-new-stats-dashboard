@@ -1,6 +1,6 @@
 import { Link } from "wouter";
 import { ArrowLeft, BarChart3, Download, Factory, FileBarChart, FileText, LineChart, PieChart, Warehouse, TrendingUp, Clock, Layers } from "lucide-react";
-import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useCementFactories } from "@/contexts/FactoriesContext";
 
 const reports = [
   {
@@ -77,14 +77,15 @@ const reports = [
   },
 ];
 
-const quickStats = [
-  { value: `${CEMENT_FACTORIES.length}`, label: "مصنع مُراقب", icon: Factory },
-  { value: "8", label: "نوع تقرير", icon: FileText },
-  { value: "2026-2000", label: "نطاق التاريخ", icon: Clock },
-  { value: "RTL", label: "واجهة عربية", icon: TrendingUp },
-];
-
 export default function ReportsIndex() {
+  const { factories } = useCementFactories();
+  const quickStats = [
+    { value: `${factories.length}`, label: "مصنع مُراقب", icon: Factory },
+    { value: "8", label: "نوع تقرير", icon: FileText },
+    { value: "2026-2000", label: "نطاق التاريخ", icon: Clock },
+    { value: "RTL", label: "واجهة عربية", icon: TrendingUp },
+  ];
+
   return (
     <div className="w-full" data-testid="page-reports-index">
 

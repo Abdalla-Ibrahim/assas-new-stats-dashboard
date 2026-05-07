@@ -35,51 +35,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { CEMENT_FACTORIES, TOTAL_CAPACITY, TOTAL_PRODUCTION } from "@/data/cementFactories";
-
-/* ── Derived data ── */
-const top6 = [...CEMENT_FACTORIES].sort((a, b) => b.marketShare - a.marketShare).slice(0, 6);
-const top8 = [...CEMENT_FACTORIES].sort((a, b) => b.production2024 - a.production2024).slice(0, 8);
-const top5 = [...CEMENT_FACTORIES].sort((a, b) => b.marketShare - a.marketShare).slice(0, 5);
-
-/* Radar data — top 4 factories */
-const radarFactories = top6.slice(0, 4);
-const radarData = [
-  {
-    metric: "السعر التنافسي",
-    ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round(100 - (f.bagPrice - 14) * 12)])),
-  },
-  {
-    metric: "الطاقة الإنتاجية",
-    ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.capacity / 11000) * 100)])),
-  },
-  {
-    metric: "كفاءة الإنتاج",
-    ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.production2024 / f.capacity) * 100)])),
-  },
-  {
-    metric: "الحصة السوقية",
-    ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round(f.marketShare * 6.2)])),
-  },
-  {
-    metric: "القوى البشرية",
-    ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.employees / 1500) * 100)])),
-  },
-  {
-    metric: "أداء السهم",
-    ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.stockPrice / 22) * 100)])),
-  },
-];
-
-/* Market share pie */
-const pieData = [
-  ...top5.map((f) => ({ name: f.shortName, value: f.marketShare, color: f.color })),
-  {
-    name: "أخرى",
-    value: parseFloat((100 - top5.reduce((s, f) => s + f.marketShare, 0)).toFixed(1)),
-    color: "#475569",
-  },
-];
+import { useCementFactories } from "@/contexts/FactoriesContext";
 
 /* Monthly production trend (2024) */
 const monthlyTrend = [
@@ -97,15 +53,6 @@ const monthlyTrend = [
   { month: "ديسمبر",ينبع: 1010, السعودية: 790, اليمامة: 640, القصيم: 530, الرياض: 465 },
 ];
 
-/* Capacity vs production top 8 */
-const capacityData = top8.map((f) => ({
-  name: f.shortName,
-  طاقة: f.capacity,
-  إنتاج: f.production2024,
-  استغلال: Math.round((f.production2024 / f.capacity) * 100),
-  color: f.color,
-}));
-
 /* Quarterly performance */
 const quarterlyData = [
   { q: "Q1 2024", إجمالي: 14850, clinker: 12650, export: 420 },
@@ -114,18 +61,6 @@ const quarterlyData = [
   { q: "Q4 2024", إجمالي: 15210, clinker: 12940, export: 465 },
   { q: "Q1 2025", إجمالي: 15640, clinker: 13280, export: 498 },
 ];
-
-/* Bag price comparison by company */
-const priceCompare = [...CEMENT_FACTORIES]
-  .sort((a, b) => a.bagPrice - b.bagPrice)
-  .map((f) => ({ name: f.shortName, price: f.bagPrice, color: f.color }));
-
-/* Stock price performance */
-const stockData = [...CEMENT_FACTORIES]
-  .filter((f) => f.listed)
-  .sort((a, b) => b.changePct - a.changePct)
-  .slice(0, 10)
-  .map((f) => ({ name: f.shortName, change: f.changePct, price: f.stockPrice, color: f.color }));
 
 /* Regional demand distribution */
 const regionalDemand = [
@@ -165,9 +100,63 @@ const TABS: { id: TabId; label: string; icon: typeof Activity }[] = [
 const fmtAR = (n: number) => new Intl.NumberFormat("ar-SA").format(n);
 
 export function AdvancedAnalytics() {
+  const { factories, TOTAL_CAPACITY, TOTAL_PRODUCTION } = useCementFactories();
   const [tab, setTab] = useState<TabId>("overview");
 
   const utilRate = Math.round((TOTAL_PRODUCTION / TOTAL_CAPACITY) * 100);
+  const top6 = [...factories].sort((a, b) => b.marketShare - a.marketShare).slice(0, 6);
+  const top8 = [...factories].sort((a, b) => b.production2024 - a.production2024).slice(0, 8);
+  const top5 = [...factories].sort((a, b) => b.marketShare - a.marketShare).slice(0, 5);
+  const radarFactories = top6.slice(0, 4);
+  const radarData = [
+    {
+      metric: "السعر التنافسي",
+      ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round(100 - (f.bagPrice - 14) * 12)])),
+    },
+    {
+      metric: "الطاقة الإنتاجية",
+      ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.capacity / 11000) * 100)])),
+    },
+    {
+      metric: "كفاءة الإنتاج",
+      ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.production2024 / f.capacity) * 100)])),
+    },
+    {
+      metric: "الحصة السوقية",
+      ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round(f.marketShare * 6.2)])),
+    },
+    {
+      metric: "القوى البشرية",
+      ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.employees / 1500) * 100)])),
+    },
+    {
+      metric: "أداء السهم",
+      ...Object.fromEntries(radarFactories.map((f) => [f.shortName, Math.round((f.stockPrice / 22) * 100)])),
+    },
+  ];
+  const pieData = [
+    ...top5.map((f) => ({ name: f.shortName, value: f.marketShare, color: f.color })),
+    {
+      name: "أخرى",
+      value: parseFloat((100 - top5.reduce((s, f) => s + f.marketShare, 0)).toFixed(1)),
+      color: "#475569",
+    },
+  ];
+  const capacityData = top8.map((f) => ({
+    name: f.shortName,
+    طاقة: f.capacity,
+    إنتاج: f.production2024,
+    استغلال: Math.round((f.production2024 / f.capacity) * 100),
+    color: f.color,
+  }));
+  const priceCompare = [...factories]
+    .sort((a, b) => a.bagPrice - b.bagPrice)
+    .map((f) => ({ name: f.shortName, price: f.bagPrice, color: f.color }));
+  const stockData = [...factories]
+    .filter((f) => f.listed)
+    .sort((a, b) => b.changePct - a.changePct)
+    .slice(0, 10)
+    .map((f) => ({ name: f.shortName, change: f.changePct, price: f.stockPrice, color: f.color }));
 
   return (
     <div className="space-y-6">
@@ -197,7 +186,7 @@ export function AdvancedAnalytics() {
           },
           {
             label: "عدد الشركات المُراقبة",
-            value: `${CEMENT_FACTORIES.length} شركة`,
+            value: `${factories.length} شركة`,
             icon: Award,
             color: "#a855f7",
             sub: "مدرجة في تداول",
@@ -386,7 +375,7 @@ export function AdvancedAnalytics() {
                 <h4 className="text-lg font-black text-white">نسبة استغلال الطاقة الإنتاجية</h4>
               </div>
               <div className="space-y-3">
-                {[...CEMENT_FACTORIES]
+                {[...factories]
                   .sort((a, b) => b.production2024 / b.capacity - a.production2024 / a.capacity)
                   .map((f) => {
                     const util = Math.round((f.production2024 / f.capacity) * 100);
@@ -431,7 +420,7 @@ export function AdvancedAnalytics() {
                 <h4 className="text-lg font-black text-white">توزيع الإنتاج الكلي 2024</h4>
               </div>
               <div className="space-y-2.5">
-                {[...CEMENT_FACTORIES]
+                {[...factories]
                   .sort((a, b) => b.production2024 - a.production2024)
                   .map((f) => {
                     const pct = ((f.production2024 / TOTAL_PRODUCTION) * 100).toFixed(1);
@@ -505,7 +494,7 @@ export function AdvancedAnalytics() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice).map((f) => {
+                    {[...factories].sort((a, b) => a.bagPrice - b.bagPrice).map((f) => {
                       const impliedBulk = f.bulkPrice;
                       const diff = ((f.bulkPrice - impliedBulk) / impliedBulk * 100).toFixed(1);
                       return (
@@ -645,7 +634,7 @@ export function AdvancedAnalytics() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[...CEMENT_FACTORIES].sort((a, b) => b.marketShare - a.marketShare).map((f, i) => {
+                    {[...factories].sort((a, b) => b.marketShare - a.marketShare).map((f, i) => {
                       const util = Math.round((f.production2024 / f.capacity) * 100);
                       return (
                         <tr key={f.id} className="border-b border-white/5 hover:bg-white/4">
@@ -750,7 +739,7 @@ export function AdvancedAnalytics() {
               </div>
               <ResponsiveContainer width="100%" height={260}>
                 <ComposedChart
-                  data={[...CEMENT_FACTORIES].sort((a, b) => b.employees - a.employees).map((f) => ({
+                  data={[...factories].sort((a, b) => b.employees - a.employees).map((f) => ({
                     name: f.shortName,
                     موظفون: f.employees,
                     تأسيس: f.founded,
@@ -764,7 +753,7 @@ export function AdvancedAnalytics() {
                   <YAxis yAxisId="right" orientation="right" domain={[1950, 2020]} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Bar yAxisId="left" dataKey="موظفون" radius={[4, 4, 0, 0]} maxBarSize={36}>
-                    {[...CEMENT_FACTORIES].sort((a, b) => b.employees - a.employees).map((f, i) => <Cell key={i} fill={f.color} />)}
+                    {[...factories].sort((a, b) => b.employees - a.employees).map((f, i) => <Cell key={i} fill={f.color} />)}
                   </Bar>
                   <Line yAxisId="right" type="monotone" dataKey="تأسيس" stroke="#f5b800" strokeWidth={2} dot={{ fill: "#f5b800", r: 3, strokeWidth: 0 }} />
                   <Legend formatter={(v) => <span style={{ color: "#e2e8f0", fontFamily: "Cairo,sans-serif", fontSize: 11 }}>{v}</span>} />

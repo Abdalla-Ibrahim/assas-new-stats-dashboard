@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, TrendingUp, Factory, Info } from "lucide-react";
-import { CEMENT_FACTORIES, FACTORY_BY_REGION } from "@/data/cementFactories";
+import { useCementFactories } from "@/contexts/FactoriesContext";
 
 type RegionDef = {
   id: string;
@@ -269,21 +269,27 @@ function getRegionFill(region: RegionDef, activeId: string | null) {
   return `hsl(${hue},${sat}%,${light}%)`;
 }
 
-const FACTORY_PINS = CEMENT_FACTORIES.map((f) => {
-  const region = REGIONS.find((r) => r.id === f.regionId);
-  if (!region) return null;
-  const hash = f.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
-  const dx = (hash % 38) - 19;
-  const dy = ((hash * 3) % 38) - 19;
-  return { ...f, pinX: region.labelX + dx, pinY: region.labelY + dy };
-}).filter(Boolean);
-
 export function SaudiMap() {
+  const { factories, FACTORY_BY_REGION } = useCementFactories();
   const [activeId, setActiveId] = useState<string>("riyadh");
 
   const activeRegion = useMemo(() => REGIONS.find((r) => r.id === activeId)!, [activeId]);
-  const activeFactories = useMemo(() => FACTORY_BY_REGION[activeId] ?? [], [activeId]);
-  const maxProduction = Math.max(...CEMENT_FACTORIES.map((f) => f.production2024));
+  const activeFactories = useMemo(() => FACTORY_BY_REGION[activeId] ?? [], [FACTORY_BY_REGION, activeId]);
+  const FACTORY_PINS = useMemo(
+    () =>
+      factories
+        .map((f) => {
+          const region = REGIONS.find((r) => r.id === f.regionId);
+          if (!region) return null;
+          const hash = f.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+          const dx = (hash % 38) - 19;
+          const dy = ((hash * 3) % 38) - 19;
+          return { ...f, pinX: region.labelX + dx, pinY: region.labelY + dy };
+        })
+        .filter(Boolean),
+    [factories],
+  );
+  const maxProduction = Math.max(...factories.map((f) => f.production2024));
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">

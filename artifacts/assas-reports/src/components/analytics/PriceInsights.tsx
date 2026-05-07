@@ -1,4 +1,4 @@
-import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useCementFactories } from "@/contexts/FactoriesContext";
 import {
   ResponsiveContainer,
   BarChart,
@@ -17,14 +17,6 @@ import {
 } from "recharts";
 import { TrendingDown, TrendingUp, Minus, AlertCircle, CheckCircle2, Award } from "lucide-react";
 
-const AVG_BAG = CEMENT_FACTORIES.reduce((s, f) => s + f.bagPrice, 0) / CEMENT_FACTORIES.length;
-const AVG_BULK = CEMENT_FACTORIES.reduce((s, f) => s + f.bulkPrice, 0) / CEMENT_FACTORIES.length;
-
-const sorted = [...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice);
-const min = sorted[0].bagPrice;
-const max = sorted[sorted.length - 1].bagPrice;
-const spread = max - min;
-
 const tooltipStyle = {
   background: "rgba(10,15,30,0.97)",
   border: "1px solid rgba(245,184,0,0.35)",
@@ -34,16 +26,6 @@ const tooltipStyle = {
   fontFamily: "Cairo,Tajawal,sans-serif",
   fontSize: 12,
 };
-
-function priceColor(price: number) {
-  if (price <= AVG_BAG + 0.5) return "#10b981";
-  if (price <= AVG_BAG + 2) return "#f5b800";
-  return "#ef4444";
-}
-
-const bulkData = [...CEMENT_FACTORIES]
-  .sort((a, b) => a.bulkPrice - b.bulkPrice)
-  .map((f) => ({ name: f.shortName, bulk: f.bulkPrice, color: f.color }));
 
 const trendData = [
   { year: "2020", متوسط: 10.2, أعلى: 11.4, أدنى: 9.5 },
@@ -55,6 +37,22 @@ const trendData = [
 ];
 
 export function PriceInsights() {
+  const { factories } = useCementFactories();
+  const AVG_BAG = factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length;
+  const AVG_BULK = factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length;
+  const sorted = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
+  const min = sorted[0].bagPrice;
+  const max = sorted[sorted.length - 1].bagPrice;
+  const spread = max - min;
+  const priceColor = (price: number) => {
+    if (price <= AVG_BAG + 0.5) return "#10b981";
+    if (price <= AVG_BAG + 2) return "#f5b800";
+    return "#ef4444";
+  };
+  const bulkData = [...factories]
+    .sort((a, b) => a.bulkPrice - b.bulkPrice)
+    .map((f) => ({ name: f.shortName, bulk: f.bulkPrice, color: f.color }));
+
   return (
     <div className="space-y-8">
       {/* ── KPI Row ── */}

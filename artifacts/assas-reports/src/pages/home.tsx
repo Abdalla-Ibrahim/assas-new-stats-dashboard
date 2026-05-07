@@ -14,7 +14,7 @@ import { PriceInsights } from "@/components/analytics/PriceInsights";
 import { MarketIntelligence } from "@/components/analytics/MarketIntelligence";
 import { ShippingCalculator } from "@/components/analytics/ShippingCalculator";
 import { CementPriceTicker } from "@/components/CementPriceTicker";
-import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useCementFactories } from "@/contexts/FactoriesContext";
 import { useLang } from "@/contexts/LanguageContext";
 
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
@@ -24,6 +24,7 @@ const formatSAR2 = (n: number) => n.toFixed(2);
 
 export default function Home() {
   const { t, locale } = useLang();
+  const { factories } = useCementFactories();
 
   const copy =
     locale === "en"
@@ -173,14 +174,14 @@ export default function Home() {
           { city: "حفر الباطن", label: "نقطة تشغيل", detail: "امتداد تشغيلي شمالي وشرقي" },
         ];
 
-  const minBagPrice = Math.min(...CEMENT_FACTORIES.map((f) => f.bagPrice));
-  const avgBagPrice = CEMENT_FACTORIES.reduce((s, f) => s + f.bagPrice, 0) / CEMENT_FACTORIES.length;
-  const maxShare = Math.max(...CEMENT_FACTORIES.map((f) => f.marketShare));
-  const topFactory = CEMENT_FACTORIES.reduce((m, f) => (f.marketShare > m.marketShare ? f : m));
-  const cheapestFactory = CEMENT_FACTORIES.reduce((m, f) => (f.bagPrice < m.bagPrice ? f : m));
-  const regionsCount = new Set(CEMENT_FACTORIES.map((f) => f.regionId)).size;
-  const sortedByPrice = [...CEMENT_FACTORIES].sort((a, b) => a.bagPrice - b.bagPrice);
-  const topFactories = [...CEMENT_FACTORIES].sort((a, b) => b.marketShare - a.marketShare).slice(0, 4);
+  const minBagPrice = Math.min(...factories.map((f) => f.bagPrice));
+  const avgBagPrice = factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length;
+  const maxShare = Math.max(...factories.map((f) => f.marketShare));
+  const topFactory = factories.reduce((m, f) => (f.marketShare > m.marketShare ? f : m));
+  const cheapestFactory = factories.reduce((m, f) => (f.bagPrice < m.bagPrice ? f : m));
+  const regionsCount = new Set(factories.map((f) => f.regionId)).size;
+  const sortedByPrice = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
+  const topFactories = [...factories].sort((a, b) => b.marketShare - a.marketShare).slice(0, 4);
 
   const priceMin = sortedByPrice[0].bagPrice;
   const priceMax = sortedByPrice[sortedByPrice.length - 1].bagPrice;
@@ -192,7 +193,7 @@ export default function Home() {
     { value: `${formatSAR2(minBagPrice)} ${t.priceTable.sar}`, label: t.stats.lowestBag, sub: cheapestFactory.shortName },
     { value: `${formatSAR2(avgBagPrice)} ${t.priceTable.sar}`, label: t.stats.avgBag, sub: t.priceTable.avgBagSub },
     { value: `${formatSAR2(maxShare)}%`, label: t.stats.topShare, sub: topFactory.shortName },
-    { value: `${CEMENT_FACTORIES.length}`, label: t.stats.factories, sub: t.priceTable.listedIn },
+    { value: `${factories.length}`, label: t.stats.factories, sub: t.priceTable.listedIn },
     { value: `${regionsCount}`, label: locale === "en" ? "Regions Covered" : locale === "zh" ? "覆盖区域" : "مناطق مغطاة", sub: "KSA" },
   ];
 
@@ -305,7 +306,7 @@ export default function Home() {
               { label: t.priceTable.lowestBag, value: `${formatSAR2(minBagPrice)} ${t.priceTable.sar}`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
               { label: t.priceTable.avgBag, value: `${formatSAR2(avgBagPrice)} ${t.priceTable.sar}`, sub: t.priceTable.avgBagSub, color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
               { label: t.priceTable.topShare, value: `${formatSAR2(maxShare)}%`, sub: topFactory.shortName, color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
-              { label: t.priceTable.totalFactories, value: `${CEMENT_FACTORIES.length} ${t.stats.factoryUnit}`, sub: t.priceTable.listedIn, color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
+              { label: t.priceTable.totalFactories, value: `${factories.length} ${t.stats.factoryUnit}`, sub: t.priceTable.listedIn, color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
             ].map((card) => (
               <div key={card.label} className={`rounded-2xl border border-slate-200 bg-gradient-to-br ${card.color} p-5 transition-all hover:-translate-y-1`}>
                 <p className="text-xs font-bold text-slate-600">{card.label}</p>

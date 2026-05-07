@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
-import { CEMENT_FACTORIES, type CementFactory } from "@/data/cementFactories";
+import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
 
 type TickerItem = CementFactory & { currentPrice: number; currentChange: number; currentPct: number; direction: "up" | "down" | "flat" };
 
-function getInitialItems(): TickerItem[] {
-  return CEMENT_FACTORIES.map((f) => ({
+function getInitialItems(factories: CementFactory[]): TickerItem[] {
+  return factories.map((f) => ({
     ...f,
     currentPrice: f.bagPrice,
     currentChange: 0,
@@ -31,14 +31,19 @@ function simulatePrice(item: TickerItem): TickerItem {
 const fmt = (n: number) => n.toFixed(2);
 
 export function CementPriceTicker() {
-  const [items, setItems] = useState<TickerItem[]>(getInitialItems);
+  const { factories } = useCementFactories();
+  const [items, setItems] = useState<TickerItem[]>(() => getInitialItems(factories));
   const [flash, setFlash] = useState<Record<string, "up" | "down" | "flat" | null>>({});
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    setItems(getInitialItems(factories));
+  }, [factories]);
+
+  useEffect(() => {
     intervalRef.current = setInterval(() => {
-      const idx = Math.floor(Math.random() * CEMENT_FACTORIES.length);
       setItems((prev) => {
+        const idx = Math.floor(Math.random() * prev.length);
         const next = [...prev];
         const old = next[idx];
         if (!old) return prev;

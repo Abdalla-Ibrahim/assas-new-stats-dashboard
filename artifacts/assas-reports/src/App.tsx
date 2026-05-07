@@ -7,11 +7,14 @@ import NotFound from "@/pages/not-found";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { FactoriesProvider } from "@/contexts/FactoriesContext";
 
 import Home from "@/pages/home";
 import Reports from "@/pages/reports/index";
 import FullReport from "@/pages/reports/full-report";
 import Contact from "@/pages/contact";
+import AdminLogin from "@/pages/admin/login";
+import AdminDashboard from "@/pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,8 @@ function Router() {
           <Route path="/reports" component={Reports} />
           <Route path="/reports/full-report" component={FullReport} />
           <Route path="/contact" component={Contact} />
+          <Route path="/admin/login" component={AdminLogin} />
+          <Route path="/admin" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -38,9 +43,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <LanguageProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
+          <FactoriesProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+          </FactoriesProvider>
           <Toaster />
         </LanguageProvider>
       </TooltipProvider>
