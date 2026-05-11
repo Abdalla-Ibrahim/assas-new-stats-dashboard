@@ -26,6 +26,21 @@ const DESTINATIONS: Record<string, { name: string; baseDistance: Record<string, 
   dammamCity: { name: "داخل الدمام", baseDistance: { riyadh: 410, dammam: 30 } },
 };
 
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  jeddah: { lat: 21.4858, lng: 39.1925 },
+  makkah: { lat: 21.3891, lng: 39.8579 },
+  madinah: { lat: 24.5247, lng: 39.5692 },
+  taif: { lat: 21.4373, lng: 40.5127 },
+  abha: { lat: 18.2164, lng: 42.5053 },
+  tabuk: { lat: 28.3838, lng: 36.555 },
+  qassim: { lat: 26.3592, lng: 43.9818 },
+  hail: { lat: 27.5114, lng: 41.7208 },
+  jazan: { lat: 16.8892, lng: 42.5611 },
+  najran: { lat: 17.5656, lng: 44.2289 },
+  riyadhCity: { lat: 24.7136, lng: 46.6753 },
+  dammamCity: { lat: 26.4207, lng: 50.0888 },
+};
+
 const TRUCK_TYPES = [
   { id: "tanker", name: "صهريج إسمنت سائب (40 طن)", capacity: 40, ratePerKm: 4.2, fixed: 250 },
   { id: "trailer", name: "مقطورة كيس إسمنت (35 طن)", capacity: 35, ratePerKm: 3.8, fixed: 200 },
@@ -40,15 +55,37 @@ const URGENCY = [
 
 const formatSAR = (n: number) => new Intl.NumberFormat("ar-SA", { maximumFractionDigits: 0 }).format(n);
 
+const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+
+const calculateRoadDistance = (originId: string, destinationId: string) => {
+  if (originId === destinationId) {
+    return 30;
+  }
+
+  const originCity = CITY_COORDINATES[originId];
+  const destinationCity = CITY_COORDINATES[destinationId];
+  const earthRadiusKm = 6371;
+  const latDistance = toRadians(destinationCity.lat - originCity.lat);
+  const lngDistance = toRadians(destinationCity.lng - originCity.lng);
+  const originLat = toRadians(originCity.lat);
+  const destinationLat = toRadians(destinationCity.lat);
+  const haversine =
+    Math.sin(latDistance / 2) ** 2 +
+    Math.cos(originLat) * Math.cos(destinationLat) * Math.sin(lngDistance / 2) ** 2;
+  const directDistance = 2 * earthRadiusKm * Math.asin(Math.sqrt(haversine));
+
+  return Math.round(directDistance * 1.25);
+};
+
 export function ShippingCalculator() {
-  const [origin, setOrigin] = useState("riyadh");
+  const [origin, setOrigin] = useState("riyadhCity");
   const [destination, setDestination] = useState("jeddah");
   const [tons, setTons] = useState(40);
   const [truck, setTruck] = useState("tanker");
   const [urgency, setUrgency] = useState("standard");
 
   const result = useMemo(() => {
-    const dist = DESTINATIONS[destination].baseDistance[origin];
+    const dist = calculateRoadDistance(origin, destination);
     const t = TRUCK_TYPES.find((x) => x.id === truck)!;
     const u = URGENCY.find((x) => x.id === urgency)!;
     const tripsNeeded = Math.max(1, Math.ceil(tons / t.capacity));
@@ -83,7 +120,7 @@ export function ShippingCalculator() {
               <Select value={origin} onValueChange={setOrigin}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {ORIGINS.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
+                  {Object.entries(DESTINATIONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
