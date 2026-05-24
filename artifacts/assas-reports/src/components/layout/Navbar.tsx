@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLang } from "@/contexts/LanguageContext";
@@ -39,10 +38,7 @@ export function Navbar() {
       <div className="container mx-auto flex h-[72px] items-center justify-between px-4">
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-3" data-testid="link-home">
-          <div className="relative overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg ring-2 ring-secondary/30 transition-all duration-300 group-hover:ring-secondary/70">
-            <BrandLogo size={44} />
-            <div className="absolute inset-0 rounded-2xl bg-secondary/10 opacity-0 transition-opacity group-hover:opacity-100" />
-          </div>
+          <img src="/logo.png" alt="أساس الإعمار" className="h-10 w-auto object-contain" />
           <div className="hidden leading-tight sm:block">
             <span className="block text-lg font-black tracking-tight text-secondary drop-shadow">مؤشر أسعار الإسمنت السعودي</span>
             <span className="block text-[10px] font-bold tracking-widest text-white/90 uppercase">شركة أساس الإعمار</span>
