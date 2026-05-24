@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Truck, MapPin, Package, Calculator, Clock, Banknote } from "lucide-react";
+import { CEMENT_FACTORIES } from "@/data/cementFactories";
 
 const ORIGINS = [
   { id: "riyadh", name: "الرياض (المقر الرئيسي)" },
@@ -41,6 +42,31 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   dammamCity: { lat: 26.4207, lng: 50.0888 },
 };
 
+const FACTORY_REGION_COORDINATE_ID: Record<string, string> = {
+  asir: "abha",
+  eastern: "dammamCity",
+  hail: "hail",
+  jouf: "tabuk",
+  madinah: "madinah",
+  makkah: "makkah",
+  najran: "najran",
+  northern: "tabuk",
+  qassim: "qassim",
+  riyadh: "riyadhCity",
+  tabuk: "tabuk",
+};
+
+const FACTORY_COORDINATES = CEMENT_FACTORIES.reduce(
+  (acc, factory) => {
+    const cityId = FACTORY_REGION_COORDINATE_ID[factory.regionId];
+    if (cityId) {
+      acc[factory.id] = CITY_COORDINATES[cityId];
+    }
+    return acc;
+  },
+  {} as Record<string, { lat: number; lng: number }>
+);
+
 const TRUCK_TYPES = [
   { id: "tanker", name: "صهريج إسمنت سائب (40 طن)", capacity: 40, ratePerKm: 4.2, fixed: 250 },
   { id: "trailer", name: "مقطورة كيس إسمنت (35 طن)", capacity: 35, ratePerKm: 3.8, fixed: 200 },
@@ -62,7 +88,7 @@ const calculateRoadDistance = (originId: string, destinationId: string) => {
     return 30;
   }
 
-  const originCity = CITY_COORDINATES[originId];
+  const originCity = FACTORY_COORDINATES[originId] ?? CITY_COORDINATES[originId];
   const destinationCity = CITY_COORDINATES[destinationId];
   const earthRadiusKm = 6371;
   const latDistance = toRadians(destinationCity.lat - originCity.lat);
@@ -78,7 +104,7 @@ const calculateRoadDistance = (originId: string, destinationId: string) => {
 };
 
 export function ShippingCalculator() {
-  const [origin, setOrigin] = useState("riyadhCity");
+  const [origin, setOrigin] = useState(CEMENT_FACTORIES[0].id);
   const [destination, setDestination] = useState("jeddah");
   const [tons, setTons] = useState(40);
   const [truck, setTruck] = useState("tanker");
@@ -120,7 +146,9 @@ export function ShippingCalculator() {
               <Select value={origin} onValueChange={setOrigin}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(DESTINATIONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.name}</SelectItem>)}
+                  {CEMENT_FACTORIES.map((factory) => (
+                    <SelectItem key={factory.id} value={factory.id}>{factory.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
