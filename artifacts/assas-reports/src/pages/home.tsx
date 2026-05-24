@@ -174,11 +174,11 @@ export default function Home() {
           { city: "حفر الباطن", label: "نقطة تشغيل", detail: "امتداد تشغيلي شمالي وشرقي" },
         ];
 
-  const minBagPrice = Math.min(...factories.map((f) => f.bagPrice));
-  const avgBagPrice = factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length;
-  const minBulkPrice = Math.min(...factories.map((f) => f.bulkPrice));
-  const avgBulkPrice = factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length;
-  const maxBulkPrice = Math.max(...factories.map((f) => f.bulkPrice));
+  const minBagPrice = Number(Math.min(...factories.map((f) => f.bagPrice)).toFixed(2));
+  const avgBagPrice = Number((factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length).toFixed(2));
+  const minBulkPrice = Number(Math.min(...factories.map((f) => f.bulkPrice)).toFixed(2));
+  const avgBulkPrice = Number((factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length).toFixed(2));
+  const maxBulkPrice = Number(Math.max(...factories.map((f) => f.bulkPrice)).toFixed(2));
   const maxShare = Math.max(...factories.map((f) => f.marketShare));
   const topFactory = factories.reduce((m, f) => (f.marketShare > m.marketShare ? f : m));
   const cheapestFactory = factories.reduce((m, f) => (f.bagPrice < m.bagPrice ? f : m));
@@ -399,7 +399,7 @@ export default function Home() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-5 py-3.5 font-bold text-slate-800">{f.bulkPrice} {t.priceTable.sar}</td>
+                        <td className="px-5 py-3.5 font-bold text-slate-800">{formatSAR2(f.bulkPrice)} {t.priceTable.sar}</td>
                         <td className="px-5 py-3.5">
                           {f.listed ? (
                             <span className={`font-black ${f.change >= 0 ? "text-emerald-700" : "text-red-600"}`}>
