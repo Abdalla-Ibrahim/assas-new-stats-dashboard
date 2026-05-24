@@ -203,10 +203,10 @@ export default function Home() {
   ];
 
   const bulkSnapshot = [
-    { value: `${formatSAR2(minBulkPrice)} ${t.priceTable.sar}`, label: "أقل سعر للطن", sub: cheapestBulkFactory.shortName },
-    { value: `${formatSAR2(avgBulkPrice)} ${t.priceTable.sar}`, label: "متوسط سعر الطن", sub: "مرجع تسعيري تقريبي" },
-    { value: `${formatSAR2(maxBulkPrice)} ${t.priceTable.sar}`, label: "أعلى سعر للطن", sub: "" },
-    { value: `${totalCapacity.toLocaleString("ar-SA")} طن/سنة`, label: "إجمالي الطاقة الإنتاجية", sub: "" },
+    { value: `${formatSAR2(minBulkPrice)} ${t.priceTable.sar}`, label: "أقل سعر للطن", sub: cheapestBulkFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
+    { value: `${formatSAR2(avgBulkPrice)} ${t.priceTable.sar}`, label: "متوسط سعر الطن", sub: "مرجع تسعيري تقريبي", color: "from-blue-500/15 to-blue-500/5", accent: "#3b82f6" },
+    { value: `${formatSAR2(maxBulkPrice)} ${t.priceTable.sar}`, label: "أعلى سعر للطن", sub: "", color: "from-emerald-500/15 to-emerald-500/5", accent: "#10b981" },
+    { value: `${totalCapacity.toLocaleString("ar-SA")} طن/سنة`, label: "إجمالي الطاقة الإنتاجية", sub: "", color: "from-purple-500/15 to-purple-500/5", accent: "#a855f7" },
   ];
 
   return (
@@ -313,12 +313,13 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {bulkSnapshot.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-white/8 bg-white/4 p-5">
-                <div className="text-2xl font-black text-secondary">{item.value}</div>
-                <div className="mt-1 text-sm font-bold text-white">{item.label}</div>
-                <div className="text-xs text-slate-500">{item.sub}</div>
+          <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {bulkSnapshot.map((card) => (
+              <div key={card.label} className={`rounded-2xl border border-slate-200 bg-gradient-to-br ${card.color} p-5 transition-all hover:-translate-y-1`}>
+                <p className="text-xs font-bold text-slate-600">{card.label}</p>
+                <p className="mt-1.5 text-3xl font-black text-slate-950">{card.value}</p>
+                <p className="mt-1 text-xs text-slate-500">{card.sub}</p>
+                <div className="mt-3 h-0.5 w-12 rounded-full" style={{ background: card.accent }} />
               </div>
             ))}
           </div>
