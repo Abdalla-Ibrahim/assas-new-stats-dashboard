@@ -28,7 +28,7 @@ function simulatePrice(item: TickerItem): TickerItem {
   };
 }
 
-const fmt = (n: number) => n.toFixed(2);
+const fmt = (n: number) => Number(n).toFixed(2);
 
 export function CementPriceTicker() {
   const { factories } = useCementFactories();

@@ -60,7 +60,7 @@ export function PriceInsights() {
         {[
           {
             label: "أقل سعر كيس",
-            value: `${min.toFixed(2)} ريال`,
+            value: `${Number(min).toFixed(2)} ريال`,
             sub: sorted[0].name,
             icon: TrendingDown,
             color: "#10b981",
@@ -68,7 +68,7 @@ export function PriceInsights() {
           },
           {
             label: "متوسط السوق",
-            value: `${AVG_BAG} ريال`,
+            value: `${Number(AVG_BAG).toFixed(2)} ريال`,
             sub: "مرجع تسعيري معتمد",
             icon: Minus,
             color: "#f5b800",
@@ -76,7 +76,7 @@ export function PriceInsights() {
           },
           {
             label: "أعلى سعر كيس",
-            value: `${max.toFixed(2)} ريال`,
+            value: `${Number(max).toFixed(2)} ريال`,
             sub: sorted[sorted.length - 1].name,
             icon: TrendingUp,
             color: "#ef4444",
@@ -84,7 +84,7 @@ export function PriceInsights() {
           },
           {
             label: "فارق السعر",
-            value: `${spread.toFixed(2)} ريال`,
+            value: `${Number(spread).toFixed(2)} ريال`,
             sub: "بين أرخص وأغلى شركة",
             icon: Award,
             color: "#a855f7",
@@ -118,7 +118,7 @@ export function PriceInsights() {
             <p className="text-xs font-bold text-secondary">مقارنة تسعيرية مباشرة</p>
             <h3 className="text-xl font-black text-white">سعر كيس الإسمنت — جميع الشركات السعودية</h3>
             <p className="mt-1 text-sm text-slate-400">
-              الخط الذهبي = متوسط السوق ({AVG_BAG} ريال) · الألوان: أخضر = أقل من المتوسط، ذهبي = قريب من المتوسط، أحمر = أعلى من المتوسط
+              الخط الذهبي = متوسط السوق ({Number(AVG_BAG).toFixed(2)} ريال) · الألوان: أخضر = أقل من المتوسط، ذهبي = قريب من المتوسط، أحمر = أعلى من المتوسط
             </p>
           </div>
           <div className="flex gap-3 text-xs">
@@ -147,7 +147,7 @@ export function PriceInsights() {
               tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `${v}﷼`}
+              tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`}
             />
             <YAxis
               type="category"
@@ -159,7 +159,7 @@ export function PriceInsights() {
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(v: number) => [`${v.toFixed(2)} ريال`, "سعر الكيس"]}
+              formatter={(v: number) => [`${Number(v).toFixed(2)} ريال`, "سعر الكيس"]}
             />
             <ReferenceLine
               x={AVG_BAG}
@@ -167,14 +167,14 @@ export function PriceInsights() {
               strokeWidth={2}
               strokeDasharray="5 3"
               label={{
-                value: `متوسط ${AVG_BAG}﷼`,
+                value: `متوسط ${Number(AVG_BAG).toFixed(2)}﷼`,
                 position: "top",
                 fill: "#f5b800",
                 fontSize: 11,
                 fontFamily: "Cairo,sans-serif",
               }}
             />
-            <Bar dataKey="price" radius={[0, 8, 8, 0]} maxBarSize={22} label={{ position: "right", fill: "rgba(255,255,255,0.6)", fontSize: 10, fontFamily: "Cairo,sans-serif", formatter: (v: number) => `${v.toFixed(2)}﷼` }}>
+            <Bar dataKey="price" radius={[0, 8, 8, 0]} maxBarSize={22} label={{ position: "right", fill: "rgba(255,255,255,0.6)", fontSize: 10, fontFamily: "Cairo,sans-serif", formatter: (v: number) => `${Number(v).toFixed(2)}﷼` }}>
               {sorted.map((f, i) => (
                 <Cell key={i} fill={priceColor(f.bagPrice)} />
               ))}
@@ -200,7 +200,7 @@ export function PriceInsights() {
                 tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => `${v}﷼`}
+                tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`}
               />
               <YAxis
                 type="category"
@@ -210,14 +210,14 @@ export function PriceInsights() {
                 tickLine={false}
                 width={62}
               />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} ريال/طن`, "سعر الطن"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال/طن`, "سعر الطن"]} />
               <ReferenceLine
-                x={Math.round(AVG_BULK)}
+                x={AVG_BULK}
                 stroke="rgba(100,160,255,0.6)"
                 strokeDasharray="4 3"
-                label={{ value: `متوسط ${Math.round(AVG_BULK)}﷼`, position: "top", fill: "rgba(100,160,255,0.8)", fontSize: 10, fontFamily: "Cairo,sans-serif" }}
+                label={{ value: `متوسط ${Number(AVG_BULK).toFixed(2)}﷼`, position: "top", fill: "rgba(100,160,255,0.8)", fontSize: 10, fontFamily: "Cairo,sans-serif" }}
               />
-              <Bar dataKey="bulk" radius={[0, 6, 6, 0]} maxBarSize={18} label={{ position: "right", fill: "rgba(255,255,255,0.5)", fontSize: 10, formatter: (v: number) => `${v}` }}>
+              <Bar dataKey="bulk" radius={[0, 6, 6, 0]} maxBarSize={18} label={{ position: "right", fill: "rgba(255,255,255,0.5)", fontSize: 10, formatter: (v: number) => `${Number(v).toFixed(2)}` }}>
                 {bulkData.map((d, i) => (
                   <Cell key={i} fill={d.color} />
                 ))}
@@ -258,9 +258,9 @@ export function PriceInsights() {
                         </span>
                       </td>
                       <td className="py-2.5 font-black" style={{ color: priceColor(f.bagPrice) }}>
-                        {f.bagPrice.toFixed(2)}﷼
+                        {Number(f.bagPrice).toFixed(2)}﷼
                       </td>
-                      <td className="py-2.5 text-slate-300">{f.bulkPrice}﷼</td>
+                      <td className="py-2.5 text-slate-300">{Number(f.bulkPrice).toFixed(2)}﷼</td>
                       <td className="py-2.5">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-black ${
@@ -273,7 +273,7 @@ export function PriceInsights() {
                         >
                           {isBelow ? <TrendingDown className="h-2.5 w-2.5" /> : isNear ? <Minus className="h-2.5 w-2.5" /> : <TrendingUp className="h-2.5 w-2.5" />}
                           {delta > 0 ? "+" : ""}
-                          {delta.toFixed(2)}﷼
+                          {Number(delta).toFixed(2)}﷼
                         </span>
                       </td>
                     </tr>
@@ -306,11 +306,11 @@ export function PriceInsights() {
               tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `${v}﷼`}
+              tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`}
             />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(v: number, name: string) => [`${v} ريال`, name]}
+              formatter={(v: number, name: string) => [`${Number(v).toFixed(2)} ريال`, name]}
             />
             <ReferenceLine y={AVG_BAG} stroke="rgba(245,184,0,0.35)" strokeDasharray="4 3" />
             <Bar dataKey="أعلى" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.3)" strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={40} />
@@ -334,20 +334,20 @@ export function PriceInsights() {
               color: "#ef4444",
               label: "ارتفاع الأسعار 2020–2025",
               value: "+48%",
-              sub: "من 10.2 ريال إلى 15.1 ريال",
+              sub: `من ${Number(10.2).toFixed(2)} ريال إلى ${Number(15.1).toFixed(2)} ريال`,
             },
             {
               icon: AlertCircle,
               color: "#f5b800",
               label: "أعلى سعر سُجّل",
-              value: "16.6 ريال",
+              value: `${Number(16.6).toFixed(2)} ريال`,
               sub: "كيس — 2025 (تقديري)",
             },
             {
               icon: CheckCircle2,
               color: "#10b981",
               label: "أدنى سعر في السوق",
-              value: `${sorted[0].bagPrice.toFixed(2)} ريال`,
+        value: `${Number(sorted[0].bagPrice).toFixed(2)} ريال`,
               sub: `كيس — ${sorted[0].name}`,
             },
           ].map((ins) => {

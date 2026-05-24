@@ -20,7 +20,7 @@ import { useLang } from "@/contexts/LanguageContext";
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
 import heroScene from "@assets/Gemini_Generated_Image_ge0120ge0120ge01_1777804194837.png";
 
-const formatSAR2 = (n: number) => n.toFixed(2);
+const formatSAR2 = (n: number) => Number(n).toFixed(2);
 
 export default function Home() {
   const { t, locale } = useLang();
@@ -377,7 +377,7 @@ export default function Home() {
                         </td>
                         <td className="px-5 py-3.5 text-sm text-slate-600">{f.region}</td>
                         <td className="px-5 py-3.5">
-                          <span className="text-lg font-black" style={{ color }}>{f.bagPrice.toFixed(2)}</span>
+                          <span className="text-lg font-black" style={{ color }}>{Number(f.bagPrice).toFixed(2)}</span>
                           <span className="mr-1 text-xs text-slate-500">{t.priceTable.sar}</span>
                         </td>
                         <td className="px-5 py-3.5">

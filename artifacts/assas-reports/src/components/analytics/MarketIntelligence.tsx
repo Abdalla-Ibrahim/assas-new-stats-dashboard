@@ -68,7 +68,7 @@ const generateHistory = (base: number, n: number) => {
     v = Math.max(base * 0.8, v + (Math.random() - 0.46) * base * 0.015);
     const date = new Date();
     date.setDate(date.getDate() - i);
-    arr.push({ t: `${date.getDate()}/${date.getMonth() + 1}`, v: parseFloat(v.toFixed(2)) });
+        arr.push({ t: `${date.getDate()}/${date.getMonth() + 1}`, v: parseFloat(Number(v).toFixed(2)) });
   }
   return arr;
 };
@@ -99,7 +99,7 @@ export function MarketIntelligence() {
         {[
           {
             label: "مؤشر السعر الموزون",
-            value: `${priceIndex.toFixed(2)} ﷼`,
+    value: `${Number(priceIndex).toFixed(2)} ﷼`,
             change: `${isUp ? "+" : ""}${priceChange}%`,
             isUp,
             icon: Activity,
@@ -172,8 +172,8 @@ export function MarketIntelligence() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="t" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9, fontFamily: "Cairo,sans-serif" }} axisLine={false} tickLine={false} interval={4} />
-              <YAxis domain={["auto", "auto"]} tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)} ريال`, "سعر الكيس"]} />
+          <YAxis domain={["auto", "auto"]} tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
+          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال`, "سعر الكيس"]} />
               <Area type="monotone" dataKey="v" stroke="#f5b800" strokeWidth={2} fill="url(#priceGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
@@ -257,11 +257,11 @@ export function MarketIntelligence() {
               <div className="space-y-1.5 text-xs">
                 <div className="flex items-center justify-between text-slate-300">
                   <span className="text-slate-500">سعر الكيس</span>
-                  <span className="font-black" style={{ color: f.sig.color }}>{f.bagPrice.toFixed(2)} ريال</span>
+                  <span className="font-black" style={{ color: f.sig.color }}>{Number(f.bagPrice).toFixed(2)} ريال</span>
                 </div>
                 <div className="flex items-center justify-between text-slate-300">
                   <span className="text-slate-500">سعر الطن</span>
-                  <span className="font-bold">{f.bulkPrice} ريال</span>
+                  <span className="font-bold">{Number(f.bulkPrice).toFixed(2)} ريال</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">الحالة</span>
@@ -290,8 +290,8 @@ export function MarketIntelligence() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
             <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 10, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="left" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9 }} axisLine={false} tickLine={false} domain={[0, 100]} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} domain={[12, 17]} />
-            <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "score" ? `${v} نقطة` : `${v.toFixed(2)} ريال`, name === "score" ? "درجة التوصية" : "سعر الكيس"]} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} domain={[12, 17]} />
+            <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [name === "score" ? `${v} نقطة` : `${Number(v).toFixed(2)} ريال`, name === "score" ? "درجة التوصية" : "سعر الكيس"]} />
             <Bar yAxisId="left" dataKey="score" radius={[6, 6, 0, 0]} maxBarSize={30}>
               {allWithSig.map((d, i) => <Cell key={i} fill={d.sig.color} />)}
             </Bar>

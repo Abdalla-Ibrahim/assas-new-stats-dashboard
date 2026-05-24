@@ -255,8 +255,8 @@ export default function AdminDashboard() {
                           </>
                         ) : (
                           <>
-                            <td className="px-4 py-3 font-black text-secondary">{factory.bagPrice.toFixed(2)}</td>
-                            <td className="px-4 py-3 font-bold text-white">{factory.bulkPrice}</td>
+                        <td className="px-4 py-3 font-black text-secondary">{Number(factory.bagPrice).toFixed(2)}</td>
+                        <td className="px-4 py-3 font-bold text-white">{Number(factory.bulkPrice).toFixed(2)}</td>
                             <td className="px-4 py-3">{factory.marketShare}%</td>
                             <td className="px-4 py-3">{factory.capacity}</td>
                             <td className="px-4 py-3">{factory.production2024}</td>

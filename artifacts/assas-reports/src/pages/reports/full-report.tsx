@@ -508,7 +508,7 @@ export default function FullReport() {
               const sortedByBag = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
               const sortedByBulk = [...factories].sort((a, b) => a.bulkPrice - b.bulkPrice);
               const avgBag = 13;
-              const avgBulk = Math.round(factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length);
+              const avgBulk = factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length;
               const priceColor = (p: number) =>
                 p <= avgBag + 0.5 ? "#10b981" : p <= avgBag + 2 ? "#f5b800" : "#ef4444";
               const trendData = [
@@ -524,10 +524,10 @@ export default function FullReport() {
                   {/* KPI row */}
                   <div className="grid gap-4 sm:grid-cols-4">
                     {[
-                      { label: "أقل سعر كيس", value: `${sortedByBag[0].bagPrice.toFixed(2)} ﷼`, sub: sortedByBag[0].name, color: "#10b981" },
-                      { label: "متوسط السوق", value: `${avgBag} ﷼`, sub: "مرجع تسعيري", color: "#f5b800" },
-                      { label: "أعلى سعر كيس", value: `${sortedByBag[sortedByBag.length - 1].bagPrice.toFixed(2)} ﷼`, sub: sortedByBag[sortedByBag.length - 1].name, color: "#ef4444" },
-                      { label: "فارق السعر", value: `${(sortedByBag[sortedByBag.length - 1].bagPrice - sortedByBag[0].bagPrice).toFixed(2)} ﷼`, sub: "بين أرخص وأغلى", color: "#a855f7" },
+                      { label: "أقل سعر كيس", value: `${Number(sortedByBag[0].bagPrice).toFixed(2)} ﷼`, sub: sortedByBag[0].name, color: "#10b981" },
+                      { label: "متوسط السوق", value: `${Number(avgBag).toFixed(2)} ﷼`, sub: "مرجع تسعيري", color: "#f5b800" },
+                      { label: "أعلى سعر كيس", value: `${Number(sortedByBag[sortedByBag.length - 1].bagPrice).toFixed(2)} ﷼`, sub: sortedByBag[sortedByBag.length - 1].name, color: "#ef4444" },
+                      { label: "فارق السعر", value: `${Number(sortedByBag[sortedByBag.length - 1].bagPrice - sortedByBag[0].bagPrice).toFixed(2)} ﷼`, sub: "بين أرخص وأغلى", color: "#a855f7" },
                     ].map((kpi) => (
                       <div key={kpi.label} className="rounded-2xl border border-white/8 bg-white/3 p-5">
                         <p className="text-xs font-bold text-slate-400">{kpi.label}</p>
@@ -544,7 +544,7 @@ export default function FullReport() {
                         <DollarSign className="h-5 w-5 text-secondary" />
                         <div>
                           <h3 className="font-black text-white">سعر كيس الإسمنت — مقارنة جميع الشركات</h3>
-                          <p className="text-xs text-slate-500">مرتبة من الأرخص إلى الأغلى · الخط الذهبي = متوسط السوق ({avgBag} ريال)</p>
+                          <p className="text-xs text-slate-500">مرتبة من الأرخص إلى الأغلى · الخط الذهبي = متوسط السوق ({Number(avgBag).toFixed(2)} ريال)</p>
                         </div>
                       </div>
                     </div>
@@ -552,11 +552,11 @@ export default function FullReport() {
                       <ResponsiveContainer width="100%" height={380}>
                         <BarChart data={sortedByBag.map((f) => ({ name: f.shortName, price: f.bagPrice, color: priceColor(f.bagPrice) }))} layout="vertical" margin={{ top: 0, right: 60, bottom: 0, left: 70 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                          <XAxis type="number" domain={[12.5, 17]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
+                          <XAxis type="number" domain={[12.5, 17]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
                           <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 12, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={65} />
-                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v.toFixed(2)} ريال`, "سعر الكيس"]} />
-                          <ReferenceLine x={avgBag} stroke="#f5b800" strokeWidth={2} strokeDasharray="5 3" label={{ value: `${avgBag}﷼ متوسط`, position: "top", fill: "#f5b800", fontSize: 11, fontFamily: "Cairo,sans-serif" }} />
-                          <Bar dataKey="price" radius={[0, 8, 8, 0]} maxBarSize={20} label={{ position: "right", fill: "rgba(255,255,255,0.6)", fontSize: 10, fontFamily: "Cairo,sans-serif", formatter: (v: number) => `${v.toFixed(2)}﷼` }}>
+                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال`, "سعر الكيس"]} />
+                          <ReferenceLine x={avgBag} stroke="#f5b800" strokeWidth={2} strokeDasharray="5 3" label={{ value: `${Number(avgBag).toFixed(2)}﷼ متوسط`, position: "top", fill: "#f5b800", fontSize: 11, fontFamily: "Cairo,sans-serif" }} />
+                          <Bar dataKey="price" radius={[0, 8, 8, 0]} maxBarSize={20} label={{ position: "right", fill: "rgba(255,255,255,0.6)", fontSize: 10, fontFamily: "Cairo,sans-serif", formatter: (v: number) => `${Number(v).toFixed(2)}﷼` }}>
                             {sortedByBag.map((f, i) => <Cell key={i} fill={priceColor(f.bagPrice)} />)}
                           </Bar>
                         </BarChart>
@@ -570,17 +570,17 @@ export default function FullReport() {
                     <div className="overflow-hidden rounded-3xl border border-white/8 bg-white/3">
                       <div className="border-b border-white/8 p-5">
                         <h3 className="font-black text-white">سعر الطن السائب</h3>
-                        <p className="text-xs text-slate-500">ريال/طن — متوسط السوق: {avgBulk} ريال</p>
+                        <p className="text-xs text-slate-500">ريال/طن — متوسط السوق: {Number(avgBulk).toFixed(2)} ريال</p>
                       </div>
                       <div className="p-5">
                         <ResponsiveContainer width="100%" height={320}>
                           <BarChart data={sortedByBulk.map((f) => ({ name: f.shortName, bulk: f.bulkPrice, color: f.color }))} layout="vertical" margin={{ top: 0, right: 50, bottom: 0, left: 65 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                            <XAxis type="number" domain={[255, 340]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
+                            <XAxis type="number" domain={[255, 340]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
                             <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={62} />
-                            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v} ريال/طن`]} />
-                            <ReferenceLine x={avgBulk} stroke="rgba(100,160,255,0.6)" strokeDasharray="4 3" label={{ value: `متوسط ${avgBulk}﷼`, position: "top", fill: "rgba(100,160,255,0.8)", fontSize: 10 }} />
-                            <Bar dataKey="bulk" radius={[0, 6, 6, 0]} maxBarSize={18} label={{ position: "right", fill: "rgba(255,255,255,0.5)", fontSize: 10, formatter: (v: number) => `${v}` }}>
+                            <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال/طن`]} />
+                            <ReferenceLine x={avgBulk} stroke="rgba(100,160,255,0.6)" strokeDasharray="4 3" label={{ value: `متوسط ${Number(avgBulk).toFixed(2)}﷼`, position: "top", fill: "rgba(100,160,255,0.8)", fontSize: 10 }} />
+                            <Bar dataKey="bulk" radius={[0, 6, 6, 0]} maxBarSize={18} label={{ position: "right", fill: "rgba(255,255,255,0.5)", fontSize: 10, formatter: (v: number) => `${Number(v).toFixed(2)}` }}>
                               {sortedByBulk.map((d, i) => <Cell key={i} fill={d.color} />)}
                             </Bar>
                           </BarChart>
@@ -617,12 +617,12 @@ export default function FullReport() {
                                       {f.shortName}
                                     </span>
                                   </td>
-                                  <td className="py-2.5 font-black" style={{ color: priceColor(f.bagPrice) }}>{f.bagPrice.toFixed(2)}﷼</td>
-                                  <td className="py-2.5 text-slate-300">{f.bulkPrice}﷼</td>
+                                  <td className="py-2.5 font-black" style={{ color: priceColor(f.bagPrice) }}>{Number(f.bagPrice).toFixed(2)}﷼</td>
+                                  <td className="py-2.5 text-slate-300">{Number(f.bulkPrice).toFixed(2)}﷼</td>
                                   <td className="py-2.5">
                                     <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold ${delta <= 0 ? "bg-emerald-900/40 text-emerald-400" : delta <= 2 ? "bg-amber-900/40 text-amber-400" : "bg-red-900/40 text-red-400"}`}>
                                       {delta > 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
-                                      {delta > 0 ? "+" : ""}{delta.toFixed(2)}﷼
+                                      {delta > 0 ? "+" : ""}{Number(delta).toFixed(2)}﷼
                                     </span>
                                   </td>
                                 </tr>
@@ -645,8 +645,8 @@ export default function FullReport() {
                         <ComposedChart data={trendData} margin={{ top: 10, right: 20, bottom: 5, left: 10 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" vertical={false} />
                           <XAxis dataKey="year" tick={{ fill: "rgba(255,255,255,0.55)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} />
-                          <YAxis domain={[9, 18]} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}﷼`} />
-                          <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`${v} ريال`, name]} />
+                <YAxis domain={[9, 18]} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`${Number(v).toFixed(2)} ريال`, name]} />
                           <Legend formatter={(v) => <span style={{ color: "#e2e8f0", fontFamily: "Cairo,sans-serif", fontSize: 11 }}>{v}</span>} />
                           <Bar dataKey="أعلى" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.3)" strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={40} />
                           <Bar dataKey="أدنى" fill="rgba(16,185,129,0.15)" stroke="rgba(16,185,129,0.35)" strokeWidth={1} radius={[4, 4, 0, 0]} maxBarSize={40} />

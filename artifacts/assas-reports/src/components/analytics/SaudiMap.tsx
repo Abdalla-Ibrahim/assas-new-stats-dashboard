@@ -537,7 +537,7 @@ export function SaudiMap() {
                         <span>طاقة: {formatNumber(f.capacity)} ألف طن</span>
                         <span>
                           {f.listed
-                            ? `السهم: ${f.stockPrice} ريال (${f.change >= 0 ? "+" : ""}${f.changePct}%)`
+                        ? `السهم: ${Number(f.stockPrice).toFixed(2)} ريال (${f.change >= 0 ? "+" : ""}${Number(f.changePct).toFixed(2)}%)`
                             : "شركة غير مدرجة"}
                         </span>
                       </div>
@@ -571,7 +571,7 @@ export function SaudiMap() {
                 {
                   label: "متوسط سعر الكيس",
                   value: activeFactories.length
-                    ? `${(activeFactories.reduce((s, f) => s + f.bagPrice, 0) / activeFactories.length).toFixed(0)} ريال`
+                        ? `${Number(activeFactories.reduce((s, f) => s + f.bagPrice, 0) / activeFactories.length).toFixed(2)} ريال`
                     : "—",
                   color: "text-emerald-400",
                 },
