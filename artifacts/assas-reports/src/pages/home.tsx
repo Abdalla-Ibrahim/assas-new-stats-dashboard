@@ -176,9 +176,14 @@ export default function Home() {
 
   const minBagPrice = Math.min(...factories.map((f) => f.bagPrice));
   const avgBagPrice = factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length;
+  const minBulkPrice = Math.min(...factories.map((f) => f.bulkPrice));
+  const avgBulkPrice = factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length;
+  const maxBulkPrice = Math.max(...factories.map((f) => f.bulkPrice));
   const maxShare = Math.max(...factories.map((f) => f.marketShare));
   const topFactory = factories.reduce((m, f) => (f.marketShare > m.marketShare ? f : m));
   const cheapestFactory = factories.reduce((m, f) => (f.bagPrice < m.bagPrice ? f : m));
+  const cheapestBulkFactory = factories.reduce((m, f) => (f.bulkPrice < m.bulkPrice ? f : m));
+  const totalCapacity = factories.reduce((s, f) => s + f.capacity, 0);
   const regionsCount = new Set(factories.map((f) => f.regionId)).size;
   const sortedByPrice = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
   const topFactories = [...factories].sort((a, b) => b.marketShare - a.marketShare).slice(0, 4);
@@ -195,6 +200,13 @@ export default function Home() {
     { value: `${formatSAR2(maxShare)}%`, label: t.stats.topShare, sub: topFactory.shortName },
     { value: `${factories.length}`, label: t.stats.factories, sub: t.priceTable.listedIn },
     { value: `${regionsCount}`, label: locale === "en" ? "Regions Covered" : locale === "zh" ? "覆盖区域" : "مناطق مغطاة", sub: "KSA" },
+  ];
+
+  const bulkSnapshot = [
+    { value: `${formatSAR2(minBulkPrice)} ${t.priceTable.sar}`, label: "أقل سعر للطن", sub: cheapestBulkFactory.shortName },
+    { value: `${formatSAR2(avgBulkPrice)} ${t.priceTable.sar}`, label: "متوسط سعر الطن", sub: "مرجع تسعيري تقريبي" },
+    { value: `${formatSAR2(maxBulkPrice)} ${t.priceTable.sar}`, label: "أعلى سعر للطن", sub: "" },
+    { value: `${totalCapacity.toLocaleString("ar-SA")} طن/سنة`, label: "إجمالي الطاقة الإنتاجية", sub: "" },
   ];
 
   return (
@@ -434,6 +446,15 @@ export default function Home() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {marketSnapshot.map((item) => (
+              <div key={item.label} className="rounded-2xl border border-white/8 bg-white/4 p-5">
+                <div className="text-2xl font-black text-secondary">{item.value}</div>
+                <div className="mt-1 text-sm font-bold text-white">{item.label}</div>
+                <div className="text-xs text-slate-500">{item.sub}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {bulkSnapshot.map((item) => (
               <div key={item.label} className="rounded-2xl border border-white/8 bg-white/4 p-5">
                 <div className="text-2xl font-black text-secondary">{item.value}</div>
                 <div className="mt-1 text-sm font-bold text-white">{item.label}</div>
