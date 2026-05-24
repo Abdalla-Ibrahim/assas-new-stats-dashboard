@@ -313,6 +313,16 @@ export default function Home() {
             </div>
           </div>
 
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {bulkSnapshot.map((item) => (
+              <div key={item.label} className="rounded-2xl border border-white/8 bg-white/4 p-5">
+                <div className="text-2xl font-black text-secondary">{item.value}</div>
+                <div className="mt-1 text-sm font-bold text-white">{item.label}</div>
+                <div className="text-xs text-slate-500">{item.sub}</div>
+              </div>
+            ))}
+          </div>
+
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: t.priceTable.lowestBag, value: `${formatSAR2(minBagPrice)} ${t.priceTable.sar}`, sub: cheapestFactory.shortName, color: "from-amber-500/15 to-amber-500/5", accent: "#f5b800" },
@@ -446,15 +456,6 @@ export default function Home() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {marketSnapshot.map((item) => (
-              <div key={item.label} className="rounded-2xl border border-white/8 bg-white/4 p-5">
-                <div className="text-2xl font-black text-secondary">{item.value}</div>
-                <div className="mt-1 text-sm font-bold text-white">{item.label}</div>
-                <div className="text-xs text-slate-500">{item.sub}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {bulkSnapshot.map((item) => (
               <div key={item.label} className="rounded-2xl border border-white/8 bg-white/4 p-5">
                 <div className="text-2xl font-black text-secondary">{item.value}</div>
                 <div className="mt-1 text-sm font-bold text-white">{item.label}</div>
