@@ -1,27 +1,19 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Factory, Info, MapPin, TrendingUp } from "lucide-react";
 import { useCementFactories } from "@/contexts/FactoriesContext";
 import { SAUDI_REGIONS } from "@/data/saudi-regions";
+import {
+  DEFAULT_MAP_DISPLAY_SETTINGS,
+  HEATMAP_METRIC_OPTIONS,
+  MAP_DISPLAY_SETTINGS_KEY,
+  REGION_ID_TO_SA_CODE,
+  type RegionId,
+  normalizeMapDisplaySettings,
+} from "@/data/mapSettings";
 import { SaudiHeatmap, type RegionValues } from "./SaudiHeatmap";
 
-const REGION_ID_TO_SA_CODE = {
-  riyadh: "SA-01",
-  makkah: "SA-02",
-  madinah: "SA-03",
-  eastern: "SA-04",
-  qassim: "SA-05",
-  hail: "SA-06",
-  tabuk: "SA-07",
-  northern: "SA-08",
-  jizan: "SA-09",
-  najran: "SA-10",
-  baha: "SA-11",
-  jouf: "SA-12",
-  asir: "SA-14",
-} as const;
-
-type RegionId = keyof typeof REGION_ID_TO_SA_CODE;
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
 
 const SA_CODE_TO_REGION_ID = Object.fromEntries(
   Object.entries(REGION_ID_TO_SA_CODE).map(([regionId, saCode]) => [saCode, regionId]),
@@ -44,7 +36,39 @@ function getRegionName(saCode: string, fallback: string) {
 
 export function SaudiMap() {
   const { factories, FACTORY_BY_REGION } = useCementFactories();
-  const [activeId, setActiveId] = useState<RegionId>("riyadh");
+  const [mapSettings, setMapSettings] = useState(DEFAULT_MAP_DISPLAY_SETTINGS);
+  const [activeId, setActiveId] = useState<RegionId>(DEFAULT_MAP_DISPLAY_SETTINGS.defaultRegionId);
+  const lastDefaultRegionRef = useRef<RegionId>(DEFAULT_MAP_DISPLAY_SETTINGS.defaultRegionId);
+
+  useEffect(() => {
+    const fetchMapSettings = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/settings/${MAP_DISPLAY_SETTINGS_KEY}`, {
+          headers: { Accept: "application/json" },
+        });
+
+        if (!response.ok) return;
+
+        const payload = (await response.json()) as { setting?: { value?: unknown } };
+        const nextSettings = normalizeMapDisplaySettings(payload.setting?.value);
+        setMapSettings(nextSettings);
+        setActiveId((current) => {
+          if (current !== lastDefaultRegionRef.current) return current;
+          lastDefaultRegionRef.current = nextSettings.defaultRegionId;
+          return nextSettings.defaultRegionId;
+        });
+      } catch {
+        setMapSettings(DEFAULT_MAP_DISPLAY_SETTINGS);
+      }
+    };
+
+    void fetchMapSettings();
+    const interval = window.setInterval(() => {
+      void fetchMapSettings();
+    }, 60_000);
+
+    return () => window.clearInterval(interval);
+  }, []);
 
   const activeSaudiId = REGION_ID_TO_SA_CODE[activeId];
   const activeRegionName = getRegionName(activeSaudiId, FACTORY_BY_REGION[activeId]?.[0]?.region ?? "الرياض");
@@ -63,19 +87,54 @@ export function SaudiMap() {
     [factories],
   );
 
-  const factoryCountValues = useMemo<RegionValues>(() => {
+  const heatmapValues = useMemo<RegionValues>(() => {
     const values = SAUDI_REGIONS.reduce<RegionValues>((acc, region) => {
       acc[region.id] = 0;
       return acc;
     }, {});
 
+    const counts = SAUDI_REGIONS.reduce<Record<string, number>>((acc, region) => {
+      acc[region.id] = 0;
+      return acc;
+    }, {});
+    const productionByRegion = { ...values };
+    const capacityByRegion = { ...values };
+
     factories.forEach((factory) => {
       const saCode = REGION_ID_TO_SA_CODE[factory.regionId as RegionId];
-      if (saCode) values[saCode] = (values[saCode] ?? 0) + 1;
+      if (!saCode) return;
+
+      counts[saCode] = (counts[saCode] ?? 0) + 1;
+      productionByRegion[saCode] = (productionByRegion[saCode] ?? 0) + factory.production2024;
+      capacityByRegion[saCode] = (capacityByRegion[saCode] ?? 0) + factory.capacity;
+
+      if (mapSettings.heatmapMetric === "factory_count") {
+        values[saCode] = (values[saCode] ?? 0) + 1;
+      } else if (mapSettings.heatmapMetric === "production") {
+        values[saCode] = (values[saCode] ?? 0) + factory.production2024;
+      } else if (mapSettings.heatmapMetric === "capacity") {
+        values[saCode] = (values[saCode] ?? 0) + factory.capacity;
+      } else if (mapSettings.heatmapMetric === "avg_bag_price") {
+        values[saCode] = (values[saCode] ?? 0) + factory.bagPrice;
+      }
     });
 
+    if (mapSettings.heatmapMetric === "avg_bag_price") {
+      Object.keys(values).forEach((saCode) => {
+        values[saCode] = counts[saCode] ? Number((values[saCode] / counts[saCode]).toFixed(2)) : 0;
+      });
+    } else if (mapSettings.heatmapMetric === "utilization") {
+      Object.keys(values).forEach((saCode) => {
+        values[saCode] = capacityByRegion[saCode]
+          ? Math.round((productionByRegion[saCode] / capacityByRegion[saCode]) * 100)
+          : 0;
+      });
+    }
+
     return values;
-  }, [factories]);
+  }, [factories, mapSettings.heatmapMetric]);
+
+  const activeMetric = HEATMAP_METRIC_OPTIONS.find((option) => option.value === mapSettings.heatmapMetric);
 
   const handleRegionSelect = (saCode: string) => {
     const nextRegionId = SA_CODE_TO_REGION_ID[saCode];
@@ -109,10 +168,11 @@ export function SaudiMap() {
             style={{ background: "radial-gradient(ellipse at 60% 40%, #0d1f3c 0%, #060c18 100%)" }}
           >
             <SaudiHeatmap
-              values={factoryCountValues}
-              unit="مصنع"
+              values={heatmapValues}
+              unit={activeMetric?.unit ?? "مصنع"}
               selectedRegionId={activeSaudiId}
               onRegionSelect={handleRegionSelect}
+              showLegend={mapSettings.showLegend}
             />
           </div>
 
@@ -160,7 +220,7 @@ export function SaudiMap() {
           </div>
         </Card>
 
-        {activeFactories.length > 0 && (
+        {mapSettings.showFactoryList && activeFactories.length > 0 && (
           <Card className="border-slate-700/50 bg-slate-900 shadow-lg">
             <CardContent className="p-5">
               <div className="mb-4 flex items-center gap-2">
@@ -170,7 +230,7 @@ export function SaudiMap() {
               <div className="space-y-3">
                 {activeFactories.map((factory, index) => {
                   const pct = (factory.production2024 / maxProduction) * 100;
-                  const util = Math.round((factory.production2024 / factory.capacity) * 100);
+                  const util = factory.capacity ? Math.round((factory.production2024 / factory.capacity) * 100) : 0;
                   return (
                     <div key={factory.id}>
                       <div className="mb-1.5 flex items-center justify-between text-sm">

@@ -38,9 +38,10 @@ interface Props {
   unit?: string;
   selectedRegionId?: string | null;
   onRegionSelect?: (regionId: string) => void;
+  showLegend?: boolean;
 }
 
-export function SaudiHeatmap({ values, unit = "مصنع", selectedRegionId, onRegionSelect }: Props) {
+export function SaudiHeatmap({ values, unit = "مصنع", selectedRegionId, onRegionSelect, showLegend = true }: Props) {
   const [hover, setHover] = useState<string | null>(null);
   const max = useMemo(
     () => Math.max(1, ...Object.values(values)),
@@ -238,32 +239,33 @@ export function SaudiHeatmap({ values, unit = "مصنع", selectedRegionId, onRe
         انقر لاختيار المنطقة · مرّر للاستكشاف
       </div>
 
-      {/* Premium legend */}
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-2 text-[11px]">
-          <span className="font-bold text-white">مقياس الكثافة</span>
-          <span className="text-white/50">الحد الأقصى: <span className="font-bold text-white">{max.toLocaleString("ar-SA")}</span></span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] text-white/50 font-medium">منخفض</span>
-          <div className="h-3 flex-1 rounded-full overflow-hidden flex shadow-inner ring-1 ring-white/10">
-            {STOPS.map((s, i) => (
-              <div
-                key={i}
-                className="flex-1 transition-transform hover:scale-y-150 cursor-help"
-                style={{ background: `rgb(${s.join(",")})` }}
-                title={`${Math.round((i / (STOPS.length - 1)) * max)}`}
-              />
-            ))}
+      {showLegend && (
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-2 text-[11px]">
+            <span className="font-bold text-white">مقياس الكثافة</span>
+            <span className="text-white/50">الحد الأقصى: <span className="font-bold text-white">{max.toLocaleString("ar-SA")}</span></span>
           </div>
-          <span className="text-[10px] text-white/50 font-medium">مرتفع</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-white/50 font-medium">منخفض</span>
+            <div className="h-3 flex-1 rounded-full overflow-hidden flex shadow-inner ring-1 ring-white/10">
+              {STOPS.map((s, i) => (
+                <div
+                  key={i}
+                  className="flex-1 transition-transform hover:scale-y-150 cursor-help"
+                  style={{ background: `rgb(${s.join(",")})` }}
+                  title={`${Math.round((i / (STOPS.length - 1)) * max)}`}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] text-white/50 font-medium">مرتفع</span>
+          </div>
+          <div className="mt-1 flex justify-between text-[9px] text-white/35">
+            <span>0</span>
+            <span>{Math.round(max / 2).toLocaleString("ar-SA")}</span>
+            <span>{max.toLocaleString("ar-SA")}</span>
+          </div>
         </div>
-        <div className="mt-1 flex justify-between text-[9px] text-white/35">
-          <span>0</span>
-          <span>{Math.round(max / 2).toLocaleString("ar-SA")}</span>
-          <span>{max.toLocaleString("ar-SA")}</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
