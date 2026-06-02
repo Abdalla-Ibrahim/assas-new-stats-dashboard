@@ -1,115 +1,35 @@
-import { useEffect, useRef, useState } from "react";
-import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
-import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
+import { Activity, Minus } from "lucide-react";
+import { useCementFactories } from "@/contexts/FactoriesContext";
 
-type TickerItem = CementFactory & { currentPrice: number; currentChange: number; currentPct: number; direction: "up" | "down" | "flat" };
-
-function getInitialItems(factories: CementFactory[]): TickerItem[] {
-  return factories.map((f) => ({
-    ...f,
-    currentPrice: f.bagPrice,
-    currentChange: 0,
-    currentPct: 0,
-    direction: "flat",
-  }));
-}
-
-function simulatePrice(item: TickerItem): TickerItem {
-  const delta = (Math.random() - 0.49) * 0.08;
-  const newPrice = Math.max(5, parseFloat((item.currentPrice + delta).toFixed(2)));
-  const newChange = parseFloat((newPrice - item.bagPrice).toFixed(2));
-  const newPct = parseFloat(((newChange / item.bagPrice) * 100).toFixed(2));
-  return {
-    ...item,
-    currentPrice: newPrice,
-    currentChange: newChange,
-    currentPct: newPct,
-    direction: newChange > 0 ? "up" : newChange < 0 ? "down" : "flat",
-  };
-}
-
-const fmt = (n: number) => Number(n).toFixed(2);
+const fmt = (value: number) => Number(value).toFixed(2);
 
 export function CementPriceTicker() {
   const { factories } = useCementFactories();
-  const [items, setItems] = useState<TickerItem[]>(() => getInitialItems(factories));
-  const [flash, setFlash] = useState<Record<string, "up" | "down" | "flat" | null>>({});
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    setItems(getInitialItems(factories));
-  }, [factories]);
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setItems((prev) => {
-        const idx = Math.floor(Math.random() * prev.length);
-        const next = [...prev];
-        const old = next[idx];
-        if (!old) return prev;
-        const updated = simulatePrice(old);
-        next[idx] = updated;
-        setFlash((f) => ({ ...f, [updated.id]: updated.direction }));
-        setTimeout(() => setFlash((f) => ({ ...f, [updated.id]: null })), 700);
-        return next;
-      });
-    }, 800);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, []);
+  const averageBagPrice =
+    factories.length > 0 ? factories.reduce((sum, factory) => sum + factory.bagPrice, 0) / factories.length : 0;
 
   return (
     <div className="sticky top-0 z-40 w-full border-b border-secondary/30 bg-slate-950 shadow-2xl shadow-black/40">
       <div className="flex items-stretch">
-        {/* Header badge */}
         <div className="flex shrink-0 items-center gap-2 border-l border-secondary/30 bg-secondary/10 px-4 py-2">
-          <Activity className="h-3.5 w-3.5 animate-pulse text-secondary" />
+          <Activity className="h-3.5 w-3.5 text-secondary" />
           <span className="whitespace-nowrap text-[11px] font-black text-secondary">أسعار الإسمنت</span>
-          <span className="ml-1 rounded-sm bg-green-500 px-1 text-[9px] font-black text-white">مباشر</span>
+          <span className="ml-1 rounded-sm bg-amber-500 px-1 text-[9px] font-black text-slate-950">تقديري</span>
         </div>
 
-        {/* Scrolling ticker */}
         <div className="relative flex-1 overflow-hidden">
           <div className="flex animate-[ticker_80s_linear_infinite] items-center gap-0 will-change-transform">
-            {[...items, ...items].map((item, i) => (
-              <div
-                key={`${item.id}-${i}`}
-                className={`flex shrink-0 items-center gap-3 border-l border-white/5 px-4 py-2 transition-colors duration-700 ${
-                  flash[item.id] === "up"
-                    ? "bg-green-500/10"
-                    : flash[item.id] === "down"
-                      ? "bg-red-500/10"
-                      : ""
-                }`}
-              >
+            {[...factories, ...factories].map((factory, index) => (
+              <div key={`${factory.id}-${index}`} className="flex shrink-0 items-center gap-3 border-l border-white/5 px-4 py-2">
                 <div className="text-right">
-                  <p className="whitespace-nowrap text-[11px] font-bold text-white/80">{item.shortName}</p>
-                  <p className="text-[9px] text-white/40">{item.symbol}</p>
+                  <p className="whitespace-nowrap text-[11px] font-bold text-white/80">{factory.shortName}</p>
+                  <p className="text-[9px] text-white/40">{factory.symbol}</p>
                 </div>
                 <div className="text-right">
-                  <p
-                    className={`whitespace-nowrap text-sm font-black transition-colors ${
-                      item.direction === "up" ? "text-green-400" : item.direction === "down" ? "text-red-400" : "text-white"
-                    }`}
-                  >
-                    {fmt(item.currentPrice)}
-                  </p>
+                  <p className="whitespace-nowrap text-sm font-black text-white">{fmt(factory.bagPrice)}</p>
                   <div className="flex items-center gap-1">
-                    {item.direction === "up" ? (
-                      <TrendingUp className="h-2.5 w-2.5 text-green-400" />
-                    ) : item.direction === "down" ? (
-                      <TrendingDown className="h-2.5 w-2.5 text-red-400" />
-                    ) : (
-                      <Minus className="h-2.5 w-2.5 text-white/40" />
-                    )}
-                    <p
-                      className={`whitespace-nowrap text-[10px] font-bold ${
-                        item.direction === "up" ? "text-green-400" : item.direction === "down" ? "text-red-400" : "text-white/40"
-                      }`}
-                    >
-                      {item.currentChange >= 0 ? "+" : ""}
-                      {fmt(item.currentChange)} ({item.currentPct >= 0 ? "+" : ""}
-                      {fmt(item.currentPct)}%)
-                    </p>
+                    <Minus className="h-2.5 w-2.5 text-white/40" />
+                    <p className="whitespace-nowrap text-[10px] font-bold text-white/40">سعر الكيس من قاعدة البيانات</p>
                   </div>
                 </div>
               </div>
@@ -117,15 +37,14 @@ export function CementPriceTicker() {
           </div>
         </div>
 
-        {/* Market summary */}
         <div className="flex shrink-0 items-center gap-4 border-r border-secondary/30 bg-slate-900 px-4 py-2">
           <div className="text-right">
-            <p className="text-[9px] text-white/50">ارتفع</p>
-            <p className="font-black text-green-400">{items.filter((i) => i.direction === "up").length}</p>
+            <p className="text-[9px] text-white/50">مصانع</p>
+            <p className="font-black text-secondary">{factories.length}</p>
           </div>
           <div className="text-right">
-            <p className="text-[9px] text-white/50">انخفض</p>
-            <p className="font-black text-red-400">{items.filter((i) => i.direction === "down").length}</p>
+            <p className="text-[9px] text-white/50">متوسط</p>
+            <p className="font-black text-white">{fmt(averageBagPrice)}</p>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("admin@assas.sa");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

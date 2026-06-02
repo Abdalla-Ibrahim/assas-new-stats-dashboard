@@ -41,7 +41,15 @@ const formatSAR = (value: number) =>
 
 export function ShippingCalculator() {
   const { factories } = useCementFactories();
-  const activeFactories = factories.filter((factory) => factory.bagPrice > 0 || factory.bulkPrice > 0);
+  const activeFactories = useMemo(
+    () => factories.filter((factory) => factory.bagPrice > 0 || factory.bulkPrice > 0),
+    [factories],
+  );
+  const [originRegionId, setOriginRegionId] = useState(activeFactories[0]?.regionId ?? "riyadh");
+  const factoriesForOrigin = useMemo(
+    () => activeFactories.filter((factory) => factory.regionId === originRegionId),
+    [activeFactories, originRegionId],
+  );
   const [factoryId, setFactoryId] = useState(activeFactories[0]?.id ?? "");
   const [destinationRegionId, setDestinationRegionId] = useState("makkah");
   const [productType, setProductType] = useState("bulk");
@@ -52,10 +60,21 @@ export function ShippingCalculator() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!factoryId && activeFactories[0]?.id) {
-      setFactoryId(activeFactories[0].id);
+    if (!activeFactories.some((factory) => factory.regionId === originRegionId) && activeFactories[0]?.regionId) {
+      setOriginRegionId(activeFactories[0].regionId);
     }
-  }, [activeFactories, factoryId]);
+  }, [activeFactories, originRegionId]);
+
+  useEffect(() => {
+    if (factoriesForOrigin.length === 0) {
+      setFactoryId("");
+      return;
+    }
+
+    if (!factoriesForOrigin.some((factory) => factory.id === factoryId)) {
+      setFactoryId(factoriesForOrigin[0].id);
+    }
+  }, [factoriesForOrigin, factoryId]);
 
   const selectedFactory = useMemo(
     () => factories.find((factory) => factory.id === factoryId),
@@ -118,7 +137,20 @@ export function ShippingCalculator() {
       </div>
       <CardContent className="grid gap-6 p-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+                <MapPin className="h-3.5 w-3.5 text-primary" /> منطقة المنشأ
+              </Label>
+              <Select value={originRegionId} onValueChange={setOriginRegionId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {REGION_OPTIONS.map((region) => (
+                    <SelectItem key={region.id} value={region.id}>{region.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div>
               <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
                 <MapPin className="h-3.5 w-3.5 text-primary" /> المصنع
@@ -126,7 +158,7 @@ export function ShippingCalculator() {
               <Select value={factoryId} onValueChange={setFactoryId}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {activeFactories.map((factory) => (
+                  {factoriesForOrigin.map((factory) => (
                     <SelectItem key={factory.id} value={factory.id}>{factory.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -258,4 +290,3 @@ export function ShippingCalculator() {
     </Card>
   );
 }
-

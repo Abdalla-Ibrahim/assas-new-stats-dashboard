@@ -21,7 +21,7 @@ export const translations = {
     // Hero
     hero: {
       badge: "مؤشر سعر الاسمنت السعودي",
-      live: "مباشر",
+      live: "تقديري",
       identity: "هوية تشغيلية سعودية لقطاع الإنشاءات",
       headline1: "مؤشر سعر الاسمنت السعودي",
       headline2: "شركة أساس الإعمار التجارية",
@@ -112,7 +112,7 @@ export const translations = {
       { value: "24/7", label: "خدمة مستمرة", sub: "دعم وتوريد" },
     ],
     // Ticker
-    ticker: { label: "أسعار الإسمنت", live: "مباشر", up: "ارتفع", down: "انخفض" },
+    ticker: { label: "أسعار الإسمنت", live: "تقديري", up: "ارتفع", down: "انخفض" },
     // Contact
     contact: {
       title: "التواصل معنا",
@@ -137,7 +137,7 @@ export const translations = {
     },
     hero: {
       badge: "Saudi Cement Price Index",
-      live: "Live",
+      live: "Estimated",
       identity: "Saudi Operational Identity for the Construction Sector",
       headline1: "Saudi Cement Price Index",
       headline2: "Assas Al-Emaar Commercial Co.",
@@ -222,7 +222,7 @@ export const translations = {
       { value: "100%", label: "KSA Coverage", sub: "All regions" },
       { value: "24/7", label: "Continuous Service", sub: "Support & supply" },
     ],
-    ticker: { label: "Cement Prices", live: "Live", up: "Up", down: "Down" },
+    ticker: { label: "Cement Prices", live: "Estimated", up: "Up", down: "Down" },
     contact: {
       title: "Contact Us",
       subtitle: "Get in touch with the Assas Al-Emaar team",
@@ -246,7 +246,7 @@ export const translations = {
     },
     hero: {
       badge: "沙特水泥价格指数",
-      live: "实时",
+      live: "估算",
       identity: "沙特建筑行业运营品牌",
       headline1: "沙特水泥价格指数",
       headline2: "阿萨斯建筑商业公司",
@@ -331,7 +331,7 @@ export const translations = {
       { value: "100%", label: "覆盖全国", sub: "所有地区" },
       { value: "24/7", label: "持续服务", sub: "支持与供应" },
     ],
-    ticker: { label: "水泥价格", live: "实时", up: "上涨", down: "下跌" },
+    ticker: { label: "水泥价格", live: "估算", up: "上涨", down: "下跌" },
     contact: {
       title: "联系我们",
       subtitle: "与阿萨斯建筑公司团队取得联系",

@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import { Router, type IRouter } from "express";
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "../db";
 import { mapFactory } from "../lib/factoryMapper";
 import { publishDataChange } from "../lib/dataEvents";
@@ -15,6 +15,7 @@ const jwt = require("jsonwebtoken") as typeof import("jsonwebtoken");
 const router: IRouter = Router();
 
 type Body = Record<string, unknown>;
+type JsonRecord = Record<string, unknown>;
 
 const get = (body: Body, camelKey: string, snakeKey = camelKey) => body[camelKey] ?? body[snakeKey];
 const asText = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : undefined);
@@ -202,6 +203,30 @@ async function logAdminChange(req: AuthenticatedRequest, entityType: string, ent
   });
 }
 
+function asRecord(value: unknown): JsonRecord {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};
+}
+
+function formatAuditValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "empty";
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") return String(value);
+  return JSON.stringify(value);
+}
+
+function summarizeChange(before: unknown, after: unknown, action: string) {
+  const beforeRecord = asRecord(before);
+  const afterRecord = asRecord(after);
+  const keys = Array.from(new Set([...Object.keys(beforeRecord), ...Object.keys(afterRecord)]));
+  const changedKey =
+    keys.find((key) => JSON.stringify(beforeRecord[key]) !== JSON.stringify(afterRecord[key])) ?? action;
+
+  return {
+    field: changedKey,
+    oldValue: action === "create" ? "empty" : formatAuditValue(beforeRecord[changedKey]),
+    newValue: action === "deactivate" ? "inactive" : formatAuditValue(afterRecord[changedKey]),
+  };
+}
+
 router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body as { email?: string; password?: string };
@@ -259,6 +284,41 @@ router.get("/regions", async (_req, res, next) => {
   try {
     const regions = await db.select().from(schema.regions).orderBy(asc(schema.regions.displayOrder));
     res.json({ regions });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/changelog", async (req, res, next) => {
+  try {
+    const limitParam = Number(req.query.limit ?? 50);
+    const limit = Math.min(100, Math.max(1, Number.isFinite(limitParam) ? Math.trunc(limitParam) : 50));
+    const [entries, factories] = await Promise.all([
+      db.select().from(schema.adminChangeLog).orderBy(desc(schema.adminChangeLog.createdAt)).limit(limit),
+      db.select().from(schema.cementFactories),
+    ]);
+    const factoryNames = new Map(factories.map((factory) => [factory.id, factory.nameAr]));
+
+    res.json({
+      changes: entries.map((entry) => {
+        const summary = summarizeChange(entry.before, entry.after, entry.action);
+        const beforeRecord = asRecord(entry.before);
+        const afterRecord = asRecord(entry.after);
+
+        return {
+          id: entry.id,
+          timestamp: entry.createdAt,
+          entityType: entry.entityType,
+          entityId: entry.entityId,
+          action: entry.action,
+          factoryName:
+            entry.entityType === "factory"
+              ? String(afterRecord.name ?? beforeRecord.name ?? factoryNames.get(entry.entityId) ?? entry.entityId)
+              : null,
+          ...summary,
+        };
+      }),
+    });
   } catch (err) {
     next(err);
   }

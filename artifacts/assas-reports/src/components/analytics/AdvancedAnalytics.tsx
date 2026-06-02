@@ -152,6 +152,10 @@ export function AdvancedAnalytics() {
   const priceCompare = [...factories]
     .sort((a, b) => a.bagPrice - b.bagPrice)
     .map((f) => ({ name: f.shortName, price: f.bagPrice, color: f.color }));
+  const bagPrices = factories.map((f) => f.bagPrice).filter((price) => Number.isFinite(price));
+  const avgBagPrice = bagPrices.reduce((sum, price) => sum + price, 0) / Math.max(1, bagPrices.length);
+  const minBagPrice = Math.max(0, Math.min(...(bagPrices.length ? bagPrices : [0])) - 0.5);
+  const maxBagPrice = Math.max(minBagPrice + 1, Math.max(...(bagPrices.length ? bagPrices : [1])) + 0.5);
   const stockData = [...factories]
     .filter((f) => f.listed)
     .sort((a, b) => b.changePct - a.changePct)
@@ -179,7 +183,7 @@ export function AdvancedAnalytics() {
           },
           {
             label: "متوسط سعر الكيس",
-            value: `${Number(13).toFixed(2)} ريال`,
+            value: `${avgBagPrice.toFixed(2)} ريال`,
             icon: DollarSign,
             color: "#f5b800",
             sub: "مرجع تسعيري موحد",
@@ -458,16 +462,16 @@ export function AdvancedAnalytics() {
                 </div>
                 <div className="rounded-xl border border-secondary/30 bg-secondary/10 px-3 py-1.5 text-center">
                   <p className="text-[10px] text-slate-400">المتوسط</p>
-                  <p className="text-lg font-black text-secondary">{Number(13).toFixed(2)} ريال</p>
+                  <p className="text-lg font-black text-secondary">{avgBagPrice.toFixed(2)} ريال</p>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={priceCompare} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
-                  <XAxis type="number" domain={[13, 16.5]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
+                  <XAxis type="number" domain={[minBagPrice, maxBagPrice]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
                   <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={56} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال`, "سعر الكيس"]} />
-                  <ReferenceLine x={13} stroke="#f5b800" strokeWidth={1.5} strokeDasharray="4 3" label={{ value: `متوسط ${Number(13).toFixed(2)}﷼`, position: "top", fill: "#f5b800", fontSize: 10, fontFamily: "Cairo,sans-serif" }} />
+                  <ReferenceLine x={avgBagPrice} stroke="#f5b800" strokeWidth={1.5} strokeDasharray="4 3" label={{ value: `متوسط ${avgBagPrice.toFixed(2)}﷼`, position: "top", fill: "#f5b800", fontSize: 10, fontFamily: "Cairo,sans-serif" }} />
                   <Bar dataKey="price" radius={[0, 6, 6, 0]} maxBarSize={18}>
                     {priceCompare.map((d, i) => <Cell key={i} fill={d.color} />)}
                   </Bar>
@@ -543,7 +547,7 @@ export function AdvancedAnalytics() {
                   <XAxis dataKey="year" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11, fontFamily: "Cairo,sans-serif" }} axisLine={false} tickLine={false} />
                   <YAxis domain={[9, 17]} tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
                   <Tooltip contentStyle={tooltipStyle} formatter={(v: number, name: string) => [`${Number(v).toFixed(2)} ريال`, name]} />
-                  <ReferenceLine y={13} stroke="#f5b800" strokeDasharray="5 3" strokeWidth={1.5} />
+                  <ReferenceLine y={avgBagPrice} stroke="#f5b800" strokeDasharray="5 3" strokeWidth={1.5} />
                   <Line type="monotone" dataKey="سعر" stroke="#f5b800" strokeWidth={3} dot={{ fill: "#f5b800", r: 5, strokeWidth: 0 }} />
                   <Line type="monotone" dataKey="مستهدف" stroke="rgba(100,200,100,0.5)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} />
                   <Legend formatter={(v) => <span style={{ color: "#e2e8f0", fontFamily: "Cairo,sans-serif", fontSize: 11 }}>{v}</span>} />

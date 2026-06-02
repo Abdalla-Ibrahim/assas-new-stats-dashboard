@@ -36,6 +36,7 @@ import {
   Legend,
 } from "recharts";
 import { useCementFactories } from "@/contexts/FactoriesContext";
+import { REGION_OPTIONS } from "@/data/mapSettings";
 
 const YEARS = Array.from({ length: 27 }, (_, index) => String(2026 - index));
 const MONTHS = [
@@ -52,7 +53,6 @@ const MONTHS = [
   "نوفمبر",
   "ديسمبر",
 ];
-const REGIONS = ["الكل", "المنطقة الوسطى", "المنطقة الشمالية", "المنطقة الجنوبية", "المنطقة الشرقية", "المنطقة الغربية"];
 const REPORT_TYPES = [
   "الكل",
   "مبيعات شركات الإسمنت",
@@ -106,7 +106,7 @@ export default function FullReport() {
   const [firstMonth, setFirstMonth] = useState("مارس");
   const [secondYear, setSecondYear] = useState("2026");
   const [secondMonth, setSecondMonth] = useState("مارس");
-  const [region, setRegion] = useState("الكل");
+  const [region, setRegion] = useState("all");
   const [reportType, setReportType] = useState("الكل");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -122,6 +122,7 @@ export default function FullReport() {
         return {
           company: factory.name,
           region: factory.region,
+          regionId: factory.regionId,
           production,
           localSales,
           exportSales,
@@ -176,8 +177,8 @@ export default function FullReport() {
     });
 
   const filteredRows = useMemo(() => {
-    if (region === "الكل") return companyRows;
-    return companyRows.filter((row) => `المنطقة ${row.region}` === region);
+    if (region === "all") return companyRows;
+    return companyRows.filter((row) => row.regionId === region);
   }, [companyRows, region]);
 
   const totals = useMemo(
@@ -222,11 +223,15 @@ export default function FullReport() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/12">
+              <Button variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/12" onClick={() => window.print()}>
                 <Printer className="ml-2 h-4 w-4" />
                 طباعة
               </Button>
-              <Button className="bg-secondary font-black text-slate-950 hover:bg-secondary/90 shadow-lg shadow-secondary/20">
+              <Button
+                disabled
+                title="قريباً"
+                className="cursor-not-allowed bg-secondary font-black text-slate-950 opacity-50 shadow-lg shadow-secondary/20"
+              >
                 <FileSpreadsheet className="ml-2 h-4 w-4" />
                 تصدير Excel
               </Button>
@@ -236,6 +241,9 @@ export default function FullReport() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-5 py-4 text-sm font-bold text-amber-100">
+          البيانات التالية تقديرية محسوبة من بيانات الطاقة الإنتاجية  تحديث بالبيانات الرسمية قيد الإعداد
+        </div>
 
         {/* FILTERS */}
         <div className="mb-8 overflow-hidden rounded-3xl border border-white/8 bg-white/3 p-6 md:p-8">
@@ -251,28 +259,28 @@ export default function FullReport() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400">السنة الأولى</Label>
-              <Select value={firstYear} onValueChange={setFirstYear}>
+              <Select value={firstYear} onValueChange={setFirstYear} disabled>
                 <SelectTrigger className="border-white/10 bg-white/5 text-white"><SelectValue /></SelectTrigger>
                 <SelectContent>{YEARS.map((year) => <SelectItem key={year} value={year}>{year}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400">الشهر الأول</Label>
-              <Select value={firstMonth} onValueChange={setFirstMonth}>
+              <Select value={firstMonth} onValueChange={setFirstMonth} disabled>
                 <SelectTrigger className="border-white/10 bg-white/5 text-white"><SelectValue /></SelectTrigger>
                 <SelectContent>{MONTHS.map((month) => <SelectItem key={month} value={month}>{month}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400">السنة الثانية</Label>
-              <Select value={secondYear} onValueChange={setSecondYear}>
+              <Select value={secondYear} onValueChange={setSecondYear} disabled>
                 <SelectTrigger className="border-white/10 bg-white/5 text-white"><SelectValue /></SelectTrigger>
                 <SelectContent>{YEARS.map((year) => <SelectItem key={year} value={year}>{year}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-400">الشهر الثاني</Label>
-              <Select value={secondMonth} onValueChange={setSecondMonth}>
+              <Select value={secondMonth} onValueChange={setSecondMonth} disabled>
                 <SelectTrigger className="border-white/10 bg-white/5 text-white"><SelectValue /></SelectTrigger>
                 <SelectContent>{MONTHS.map((month) => <SelectItem key={month} value={month}>{month}</SelectItem>)}</SelectContent>
               </Select>
@@ -281,7 +289,10 @@ export default function FullReport() {
               <Label className="text-xs font-bold text-slate-400">المنطقة</Label>
               <Select value={region} onValueChange={setRegion}>
                 <SelectTrigger className="border-white/10 bg-white/5 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent>{REGIONS.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="all">الكل</SelectItem>
+                  {REGION_OPTIONS.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
@@ -292,6 +303,7 @@ export default function FullReport() {
               </Select>
             </div>
           </div>
+          <p className="mt-4 text-xs font-bold text-amber-200/80">الفلترة الزمنية ستكون متاحة عند توفر البيانات الدورية</p>
           <button
             onClick={handleSearch}
             disabled={isLoading}
@@ -314,6 +326,7 @@ export default function FullReport() {
             <div key={kpi.label} className={`rounded-2xl border border-white/8 bg-gradient-to-br ${kpi.bg} p-5`}>
               <p className="mb-1 text-xs font-bold text-slate-400">{kpi.label}</p>
               <p className="text-xl font-black text-white md:text-2xl">{kpi.value}</p>
+              <p className="mt-2 text-[10px] font-bold text-amber-200/80">تقديري محسوب من بيانات الطاقة الإنتاجية</p>
               <div className="mt-2 h-0.5 w-8 rounded-full" style={{ background: kpi.accent }} />
             </div>
           ))}
@@ -507,8 +520,14 @@ export default function FullReport() {
               };
               const sortedByBag = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
               const sortedByBulk = [...factories].sort((a, b) => a.bulkPrice - b.bulkPrice);
-              const avgBag = 13;
-              const avgBulk = factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length;
+              const bagValues = factories.map((f) => f.bagPrice).filter((price) => Number.isFinite(price));
+              const bulkValues = factories.map((f) => f.bulkPrice).filter((price) => Number.isFinite(price));
+              const avgBag = bagValues.reduce((s, price) => s + price, 0) / Math.max(1, bagValues.length);
+              const avgBulk = bulkValues.reduce((s, price) => s + price, 0) / Math.max(1, bulkValues.length);
+              const minBag = Math.max(0, Math.min(...(bagValues.length ? bagValues : [0])) - 0.5);
+              const maxBag = Math.max(minBag + 1, Math.max(...(bagValues.length ? bagValues : [1])) + 0.5);
+              const minBulk = Math.max(0, Math.min(...(bulkValues.length ? bulkValues : [0])) - 10);
+              const maxBulk = Math.max(minBulk + 20, Math.max(...(bulkValues.length ? bulkValues : [20])) + 10);
               const priceColor = (p: number) =>
                 p <= avgBag + 0.5 ? "#10b981" : p <= avgBag + 2 ? "#f5b800" : "#ef4444";
               const trendData = [
@@ -552,7 +571,7 @@ export default function FullReport() {
                       <ResponsiveContainer width="100%" height={380}>
                         <BarChart data={sortedByBag.map((f) => ({ name: f.shortName, price: f.bagPrice, color: priceColor(f.bagPrice) }))} layout="vertical" margin={{ top: 0, right: 60, bottom: 0, left: 70 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                          <XAxis type="number" domain={[12.5, 17]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
+                          <XAxis type="number" domain={[minBag, maxBag]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
                           <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.7)", fontSize: 12, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={65} />
                           <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال`, "سعر الكيس"]} />
                           <ReferenceLine x={avgBag} stroke="#f5b800" strokeWidth={2} strokeDasharray="5 3" label={{ value: `${Number(avgBag).toFixed(2)}﷼ متوسط`, position: "top", fill: "#f5b800", fontSize: 11, fontFamily: "Cairo,sans-serif" }} />
@@ -576,7 +595,7 @@ export default function FullReport() {
                         <ResponsiveContainer width="100%" height={320}>
                           <BarChart data={sortedByBulk.map((f) => ({ name: f.shortName, bulk: f.bulkPrice, color: f.color }))} layout="vertical" margin={{ top: 0, right: 50, bottom: 0, left: 65 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-                            <XAxis type="number" domain={[255, 340]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
+                            <XAxis type="number" domain={[minBulk, maxBulk]} tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${Number(v).toFixed(2)}﷼`} />
                             <YAxis type="category" dataKey="name" tick={{ fill: "rgba(255,255,255,0.65)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }} axisLine={false} tickLine={false} width={62} />
                             <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${Number(v).toFixed(2)} ريال/طن`]} />
                             <ReferenceLine x={avgBulk} stroke="rgba(100,160,255,0.6)" strokeDasharray="4 3" label={{ value: `متوسط ${Number(avgBulk).toFixed(2)}﷼`, position: "top", fill: "rgba(100,160,255,0.8)", fontSize: 10 }} />

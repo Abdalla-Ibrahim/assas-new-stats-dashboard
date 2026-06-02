@@ -38,12 +38,18 @@ const trendData = [
 
 export function PriceInsights() {
   const { factories } = useCementFactories();
-  const AVG_BAG = factories.reduce((s, f) => s + f.bagPrice, 0) / factories.length;
-  const AVG_BULK = factories.reduce((s, f) => s + f.bulkPrice, 0) / factories.length;
+  const bagValues = factories.map((f) => f.bagPrice).filter((price) => Number.isFinite(price));
+  const bulkValues = factories.map((f) => f.bulkPrice).filter((price) => Number.isFinite(price));
+  const AVG_BAG = bagValues.reduce((s, price) => s + price, 0) / Math.max(1, bagValues.length);
+  const AVG_BULK = bulkValues.reduce((s, price) => s + price, 0) / Math.max(1, bulkValues.length);
   const sorted = [...factories].sort((a, b) => a.bagPrice - b.bagPrice);
-  const min = sorted[0].bagPrice;
-  const max = sorted[sorted.length - 1].bagPrice;
+  const min = sorted[0]?.bagPrice ?? 0;
+  const max = sorted[sorted.length - 1]?.bagPrice ?? 0;
   const spread = max - min;
+  const bagDomainMin = Math.max(0, Math.min(...(bagValues.length ? bagValues : [0])) - 0.5);
+  const bagDomainMax = Math.max(bagDomainMin + 1, Math.max(...(bagValues.length ? bagValues : [1])) + 0.5);
+  const bulkDomainMin = Math.max(0, Math.min(...(bulkValues.length ? bulkValues : [0])) - 10);
+  const bulkDomainMax = Math.max(bulkDomainMin + 20, Math.max(...(bulkValues.length ? bulkValues : [20])) + 10);
   const priceColor = (price: number) => {
     if (price <= AVG_BAG + 0.5) return "#10b981";
     if (price <= AVG_BAG + 2) return "#f5b800";
@@ -61,7 +67,7 @@ export function PriceInsights() {
           {
             label: "أقل سعر كيس",
             value: `${Number(min).toFixed(2)} ريال`,
-            sub: sorted[0].name,
+            sub: sorted[0]?.name ?? "-",
             icon: TrendingDown,
             color: "#10b981",
             bg: "from-emerald-500/15 to-emerald-500/5",
@@ -77,7 +83,7 @@ export function PriceInsights() {
           {
             label: "أعلى سعر كيس",
             value: `${Number(max).toFixed(2)} ريال`,
-            sub: sorted[sorted.length - 1].name,
+            sub: sorted[sorted.length - 1]?.name ?? "-",
             icon: TrendingUp,
             color: "#ef4444",
             bg: "from-red-500/15 to-red-500/5",
@@ -115,7 +121,7 @@ export function PriceInsights() {
       <div className="rounded-2xl border border-slate-700/50 bg-slate-900 p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold text-secondary">مقارنة تسعيرية مباشرة</p>
+            <p className="text-xs font-bold text-secondary">مقارنة تسعيرية من البيانات</p>
             <h3 className="text-xl font-black text-white">سعر كيس الإسمنت — جميع الشركات السعودية</h3>
             <p className="mt-1 text-sm text-slate-400">
               الخط الذهبي = متوسط السوق ({Number(AVG_BAG).toFixed(2)} ريال) · الألوان: أخضر = أقل من المتوسط، ذهبي = قريب من المتوسط، أحمر = أعلى من المتوسط
@@ -143,7 +149,7 @@ export function PriceInsights() {
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
             <XAxis
               type="number"
-              domain={[12.5, 17]}
+              domain={[bagDomainMin, bagDomainMax]}
               tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "Cairo,Tajawal,sans-serif" }}
               axisLine={false}
               tickLine={false}
@@ -196,7 +202,7 @@ export function PriceInsights() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
               <XAxis
                 type="number"
-              domain={[190, 220]}
+                domain={[bulkDomainMin, bulkDomainMax]}
                 tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}

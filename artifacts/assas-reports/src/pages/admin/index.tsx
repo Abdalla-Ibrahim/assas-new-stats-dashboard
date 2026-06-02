@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle2, LogOut, MapPinned, Pencil, RefreshCw, Save, Truck } from "lucide-react";
+import { CheckCircle2, History, LogOut, MapPinned, Pencil, Plus, RefreshCw, Save, Trash2, Truck } from "lucide-react";
 import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
 import {
   DEFAULT_MAP_DISPLAY_SETTINGS,
@@ -41,11 +41,37 @@ type ShippingCost = {
 };
 
 type EditState = {
+  id?: string;
+  name_ar: string;
+  name_en: string;
   bag_price: string;
   bulk_price: string;
   market_share: string;
   capacity: string;
   production: string;
+  region_id: string;
+  region: string;
+  color: string;
+  listed: boolean;
+  stock_price: string;
+  stock_change: string;
+  stock_change_pct: string;
+  stock_symbol: string;
+  founded: string;
+  employees: string;
+  is_active: boolean;
+};
+
+type ChangeLogEntry = {
+  id: string;
+  timestamp: string;
+  entityType: string;
+  entityId: string;
+  action: string;
+  factoryName: string | null;
+  field: string;
+  oldValue: string;
+  newValue: string;
 };
 
 type MapEditState = {
@@ -69,11 +95,69 @@ type ShippingEditState = {
 };
 
 const toEditState = (factory: AdminFactory): EditState => ({
+  id: factory.id,
+  name_ar: factory.name,
+  name_en: factory.shortName,
   bag_price: String(factory.bagPrice),
   bulk_price: String(factory.bulkPrice),
   market_share: String(factory.marketShare),
   capacity: String(factory.capacity),
   production: String(factory.production2024),
+  region_id: factory.regionId,
+  region: factory.region,
+  color: factory.color,
+  listed: factory.listed,
+  stock_price: String(factory.stockPrice),
+  stock_change: String(factory.change),
+  stock_change_pct: String(factory.changePct),
+  stock_symbol: factory.symbol === "خاص" ? "" : factory.symbol,
+  founded: String(factory.founded),
+  employees: String(factory.employees),
+  is_active: factory.isActive !== false,
+});
+
+const newFactoryDraft = (): EditState => ({
+  id: "",
+  name_ar: "",
+  name_en: "",
+  bag_price: "",
+  bulk_price: "",
+  market_share: "0",
+  capacity: "0",
+  production: "0",
+  region_id: "riyadh",
+  region: regionName("riyadh"),
+  color: "#f5b800",
+  listed: false,
+  stock_price: "0",
+  stock_change: "0",
+  stock_change_pct: "0",
+  stock_symbol: "",
+  founded: String(new Date().getFullYear()),
+  employees: "0",
+  is_active: true,
+});
+
+const factoryPayloadFromDraft = (draft: EditState) => ({
+  id: draft.id?.trim(),
+  name_ar: draft.name_ar,
+  name_en: draft.name_en || draft.name_ar,
+  bag_price: Number(draft.bag_price),
+  bulk_price: Number(draft.bulk_price),
+  market_share: Number(draft.market_share),
+  capacity: Number(draft.capacity),
+  production: Number(draft.production),
+  region_id: draft.region_id,
+  region: draft.region,
+  color: draft.color,
+  listed: draft.listed,
+  stock_price: Number(draft.stock_price),
+  stock_change: Number(draft.stock_change),
+  stock_change_pct: Number(draft.stock_change_pct),
+  stock_symbol: draft.stock_symbol || null,
+  founded: Number(draft.founded),
+  employees: Number(draft.employees),
+  is_active: draft.is_active,
 });
 
 const toMapEditState = (factory: AdminFactory): MapEditState => ({
@@ -115,9 +199,12 @@ export default function AdminDashboard() {
   const { refetch } = useCementFactories();
   const [factories, setFactories] = useState<AdminFactory[]>([]);
   const [shippingCosts, setShippingCosts] = useState<ShippingCost[]>([]);
+  const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [settingDrafts, setSettingDrafts] = useState<Record<string, string>>({});
   const [mapSettingsDraft, setMapSettingsDraft] = useState<MapDisplaySettings>(DEFAULT_MAP_DISPLAY_SETTINGS);
+  const [isCreatingFactory, setIsCreatingFactory] = useState(false);
+  const [newFactory, setNewFactory] = useState<EditState>(newFactoryDraft);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<EditState | null>(null);
   const [mapEditingId, setMapEditingId] = useState<string | null>(null);
@@ -157,28 +244,36 @@ export default function AdminDashboard() {
     setError(null);
 
     try {
-      const [factoryResponse, settingsResponse, shippingResponse] = await Promise.all([
+      const [factoryResponse, settingsResponse, shippingResponse, changeLogResponse] = await Promise.all([
         authedFetch("/api/admin/factories"),
         authedFetch("/api/admin/settings"),
         authedFetch("/api/admin/shipping-costs"),
+        authedFetch("/api/admin/changelog?limit=50"),
       ]);
 
-      if (factoryResponse.status === 401 || settingsResponse.status === 401 || shippingResponse.status === 401) {
+      if (
+        factoryResponse.status === 401 ||
+        settingsResponse.status === 401 ||
+        shippingResponse.status === 401 ||
+        changeLogResponse.status === 401
+      ) {
         localStorage.removeItem("assas_admin_token");
         setLocation("/admin/login");
         return;
       }
 
-      if (!factoryResponse.ok || !settingsResponse.ok || !shippingResponse.ok) {
+      if (!factoryResponse.ok || !settingsResponse.ok || !shippingResponse.ok || !changeLogResponse.ok) {
         throw new Error("تعذر تحميل بيانات لوحة التحكم");
       }
 
       const factoryPayload = (await factoryResponse.json()) as { factories: AdminFactory[] };
       const settingsPayload = (await settingsResponse.json()) as { settings: SiteSetting[] };
       const shippingPayload = (await shippingResponse.json()) as { shippingCosts: ShippingCost[] };
+      const changeLogPayload = (await changeLogResponse.json()) as { changes: ChangeLogEntry[] };
 
       setFactories(factoryPayload.factories);
       setShippingCosts(shippingPayload.shippingCosts);
+      setChangeLog(changeLogPayload.changes);
       setSettings(settingsPayload.settings);
       setSettingDrafts(
         Object.fromEntries(settingsPayload.settings.map((setting) => [setting.key, settingToText(setting.value)])),
@@ -202,6 +297,75 @@ export default function AdminDashboard() {
   const logout = () => {
     localStorage.removeItem("assas_admin_token");
     setLocation("/admin/login");
+  };
+
+  const renderFactoryForm = (draft: EditState, onChange: (patch: Partial<EditState>) => void, includeId: boolean) => {
+    const textFields = [
+      ...(includeId ? ([["id", "Factory ID"]] as const) : []),
+      ["name_ar", "Arabic name"],
+      ["name_en", "English name"],
+      ["bag_price", "Bag price"],
+      ["bulk_price", "Bulk price"],
+      ["market_share", "Market share"],
+      ["capacity", "Capacity"],
+      ["production", "Production"],
+      ["stock_price", "Stock price"],
+      ["stock_change", "Stock change"],
+      ["stock_change_pct", "Stock change %"],
+      ["stock_symbol", "Stock symbol"],
+      ["founded", "Founded"],
+      ["employees", "Employees"],
+      ["color", "Color"],
+      ["region", "Region label"],
+    ] as const;
+
+    return (
+      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-4">
+        {textFields.map(([field, label]) => (
+          <label key={field} className="block">
+            <span className="mb-1 block text-xs font-bold text-slate-400">{label}</span>
+            <input
+              value={draft[field] ?? ""}
+              onChange={(event) => onChange({ [field]: event.target.value })}
+              className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+            />
+          </label>
+        ))}
+        <label className="block">
+          <span className="mb-1 block text-xs font-bold text-slate-400">Region</span>
+          <select
+            value={draft.region_id}
+            onChange={(event) => {
+              const nextRegionId = event.target.value;
+              onChange({ region_id: nextRegionId, region: regionName(nextRegionId) });
+            }}
+            className="w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+          >
+            {REGION_OPTIONS.map((region) => (
+              <option key={region.id} value={region.id}>{region.name}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950 px-3 py-2">
+          <span className="text-sm font-bold text-white">Listed</span>
+          <input
+            type="checkbox"
+            checked={draft.listed}
+            onChange={(event) => onChange({ listed: event.target.checked })}
+            className="h-5 w-5 accent-secondary"
+          />
+        </label>
+        <label className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-950 px-3 py-2">
+          <span className="text-sm font-bold text-white">Active</span>
+          <input
+            type="checkbox"
+            checked={draft.is_active}
+            onChange={(event) => onChange({ is_active: event.target.checked })}
+            className="h-5 w-5 accent-secondary"
+          />
+        </label>
+      </div>
+    );
   };
 
   const startEdit = (factory: AdminFactory) => {
@@ -271,13 +435,7 @@ export default function AdminDashboard() {
     try {
       const response = await authedFetch(`/api/admin/factories/${factoryId}`, {
         method: "PUT",
-        body: JSON.stringify({
-          bag_price: Number(editDraft.bag_price),
-          bulk_price: Number(editDraft.bulk_price),
-          market_share: Number(editDraft.market_share),
-          capacity: Number(editDraft.capacity),
-          production: Number(editDraft.production),
-        }),
+        body: JSON.stringify(factoryPayloadFromDraft(editDraft)),
       });
 
       if (!response.ok) {
@@ -291,6 +449,61 @@ export default function AdminDashboard() {
       await loadAdminData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "تعذر حفظ البيانات");
+    }
+  };
+
+  const createFactory = async () => {
+    setMessage(null);
+    setError(null);
+
+    if (!newFactory.id?.trim() || !newFactory.name_ar.trim()) {
+      setError("Factory ID and Arabic name are required.");
+      return;
+    }
+
+    if (!isHexColor(newFactory.color)) {
+      setError("Factory color must use HEX format, for example #f5b800.");
+      return;
+    }
+
+    try {
+      const response = await authedFetch("/api/admin/factories", {
+        method: "POST",
+        body: JSON.stringify(factoryPayloadFromDraft(newFactory)),
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to create factory.");
+      }
+
+      setNewFactory(newFactoryDraft());
+      setIsCreatingFactory(false);
+      setMessage("Factory created successfully.");
+      refetch();
+      await loadAdminData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create factory.");
+    }
+  };
+
+  const deactivateFactory = async (factory: AdminFactory) => {
+    setMessage(null);
+    setError(null);
+
+    try {
+      const response = await authedFetch(`/api/admin/factories/${factory.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to deactivate factory.");
+      }
+
+      setMessage("Factory deactivated successfully.");
+      refetch();
+      await loadAdminData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to deactivate factory.");
     }
   };
 
@@ -735,8 +948,43 @@ export default function AdminDashboard() {
 
         <section className="mb-8 overflow-hidden rounded-3xl border border-white/8 bg-slate-900">
           <div className="border-b border-white/8 p-6">
+            <div className="mb-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCreatingFactory((current) => !current);
+                  setNewFactory(newFactoryDraft());
+                }}
+                className="inline-flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-sm font-black text-slate-950 hover:bg-secondary/90"
+              >
+                <Plus className="h-4 w-4" />
+                Add Factory
+              </button>
+            </div>
             <h2 className="text-xl font-black">المصانع والأسعار</h2>
             <p className="mt-1 text-sm text-slate-500">تعديل الأسعار يحدث سجل الأسعار ويعيد تحميل بيانات الموقع.</p>
+            {isCreatingFactory && (
+              <div className="mt-6 rounded-2xl border border-secondary/25 bg-secondary/5 p-4">
+                {renderFactoryForm(newFactory, (patch) => setNewFactory((current) => ({ ...current, ...patch })), true)}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void createFactory()}
+                    className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2 text-sm font-black text-slate-950"
+                  >
+                    <Save className="h-4 w-4" />
+                    Save Factory
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingFactory(false)}
+                    className="rounded-xl border border-white/10 px-4 py-2 text-sm font-bold text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="overflow-x-auto">
@@ -757,6 +1005,7 @@ export default function AdminDashboard() {
                   factories.map((factory) => {
                     const isEditing = editingId === factory.id && editDraft;
                     return (
+                      <>
                       <tr key={factory.id} className="border-t border-white/5 hover:bg-white/3">
                         <td className="px-4 py-3">
                           <div className="font-black text-white">{factory.name}</div>
@@ -790,26 +1039,58 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-4 py-3">
                           {isEditing ? (
-                            <button
-                              type="button"
-                              onClick={() => void saveFactory(factory.id)}
-                              className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-black text-slate-950"
-                            >
-                              <Save className="h-3.5 w-3.5" />
-                              حفظ
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void saveFactory(factory.id)}
+                                className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-black text-slate-950"
+                              >
+                                <Save className="h-3.5 w-3.5" />
+                                حفظ
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingId(null);
+                                  setEditDraft(null);
+                                }}
+                                className="rounded-xl border border-white/10 px-3 py-2 text-xs font-bold text-white"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => startEdit(factory)}
-                              className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                              تعديل
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(factory)}
+                                className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                                تعديل
+                              </button>
+                              {factory.isActive !== false && (
+                                <button
+                                  type="button"
+                                  onClick={() => void deactivateFactory(factory)}
+                                  className="inline-flex items-center gap-1 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-200 hover:bg-red-500/15"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Deactivate
+                                </button>
+                              )}
+                            </div>
                           )}
                         </td>
                       </tr>
+                      {isEditing && (
+                        <tr className="border-t border-secondary/15 bg-secondary/5">
+                          <td colSpan={8} className="px-4 py-4">
+                            {renderFactoryForm(editDraft, (patch) => setEditDraft((current) => (current ? { ...current, ...patch } : current)), false)}
+                          </td>
+                        </tr>
+                      )}
+                      </>
                     );
                   })
                 )}
@@ -1195,6 +1476,46 @@ export default function AdminDashboard() {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mb-8 overflow-hidden rounded-3xl border border-white/8 bg-slate-900">
+          <div className="border-b border-white/8 p-6">
+            <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-secondary">
+              <History className="h-4 w-4" />
+              Change Log
+            </p>
+            <h2 className="mt-2 text-xl font-black">Admin Audit Trail</h2>
+            <p className="mt-1 text-sm text-slate-500">Latest persisted admin changes with timestamp, field, old value, new value, and factory name when available.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[980px] text-right text-sm">
+              <thead className="bg-white/5 text-xs text-slate-400">
+                <tr>
+                  {["Timestamp", "Factory", "Action", "Field", "Old value", "New value"].map((heading) => (
+                    <th key={heading} className="px-4 py-3 font-black">{heading}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {changeLog.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-slate-500">No admin changes recorded yet.</td>
+                  </tr>
+                ) : (
+                  changeLog.map((entry) => (
+                    <tr key={entry.id} className="border-t border-white/5 hover:bg-white/3">
+                      <td className="px-4 py-3 text-slate-300">{new Date(entry.timestamp).toLocaleString("ar-SA")}</td>
+                      <td className="px-4 py-3 font-bold text-white">{entry.factoryName ?? entry.entityId}</td>
+                      <td className="px-4 py-3">{entry.action}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-secondary">{entry.field}</td>
+                      <td className="max-w-52 truncate px-4 py-3 text-slate-400" title={entry.oldValue}>{entry.oldValue}</td>
+                      <td className="max-w-52 truncate px-4 py-3 text-slate-200" title={entry.newValue}>{entry.newValue}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
