@@ -5,18 +5,27 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  GetRegionalAnalytics200,
+  GetShippingCosts200,
+  HealthStatus,
+  ShippingCalculation,
+  ShippingCalculationRequest,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +108,315 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Server-sent events stream that emits data-change events after admin writes.
+ * @summary Data change event stream
+ */
+export const getDataEventsUrl = () => {
+  return `/api/events`;
+};
+
+export const dataEvents = async (options?: RequestInit): Promise<string> => {
+  return customFetch<string>(getDataEventsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getDataEventsQueryKey = () => {
+  return [`/api/events`] as const;
+};
+
+export const getDataEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof dataEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof dataEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getDataEventsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof dataEvents>>> = ({
+    signal,
+  }) => dataEvents({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof dataEvents>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type DataEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof dataEvents>>
+>;
+export type DataEventsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Data change event stream
+ */
+
+export function useDataEvents<
+  TData = Awaited<ReturnType<typeof dataEvents>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof dataEvents>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getDataEventsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Returns canonical regions with aggregate factory metrics and factory breakdowns.
+ * @summary Region analytics
+ */
+export const getGetRegionalAnalyticsUrl = () => {
+  return `/api/analytics/regions`;
+};
+
+export const getRegionalAnalytics = async (
+  options?: RequestInit,
+): Promise<GetRegionalAnalytics200> => {
+  return customFetch<GetRegionalAnalytics200>(getGetRegionalAnalyticsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetRegionalAnalyticsQueryKey = () => {
+  return [`/api/analytics/regions`] as const;
+};
+
+export const getGetRegionalAnalyticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRegionalAnalytics>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRegionalAnalytics>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRegionalAnalyticsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRegionalAnalytics>>
+  > = ({ signal }) => getRegionalAnalytics({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRegionalAnalytics>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRegionalAnalyticsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRegionalAnalytics>>
+>;
+export type GetRegionalAnalyticsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Region analytics
+ */
+
+export function useGetRegionalAnalytics<
+  TData = Awaited<ReturnType<typeof getRegionalAnalytics>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRegionalAnalytics>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRegionalAnalyticsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Active shipping costs
+ */
+export const getGetShippingCostsUrl = () => {
+  return `/api/shipping/costs`;
+};
+
+export const getShippingCosts = async (
+  options?: RequestInit,
+): Promise<GetShippingCosts200> => {
+  return customFetch<GetShippingCosts200>(getGetShippingCostsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetShippingCostsQueryKey = () => {
+  return [`/api/shipping/costs`] as const;
+};
+
+export const getGetShippingCostsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getShippingCosts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getShippingCosts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetShippingCostsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getShippingCosts>>
+  > = ({ signal }) => getShippingCosts({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getShippingCosts>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetShippingCostsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getShippingCosts>>
+>;
+export type GetShippingCostsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Active shipping costs
+ */
+
+export function useGetShippingCosts<
+  TData = Awaited<ReturnType<typeof getShippingCosts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getShippingCosts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetShippingCostsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Calculate landed cement cost
+ */
+export const getCalculateShippingUrl = () => {
+  return `/api/shipping/calculate`;
+};
+
+export const calculateShipping = async (
+  shippingCalculationRequest: ShippingCalculationRequest,
+  options?: RequestInit,
+): Promise<ShippingCalculation> => {
+  return customFetch<ShippingCalculation>(getCalculateShippingUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(shippingCalculationRequest),
+  });
+};
+
+export const getCalculateShippingMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof calculateShipping>>,
+    TError,
+    { data: BodyType<ShippingCalculationRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof calculateShipping>>,
+  TError,
+  { data: BodyType<ShippingCalculationRequest> },
+  TContext
+> => {
+  const mutationKey = ["calculateShipping"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof calculateShipping>>,
+    { data: BodyType<ShippingCalculationRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return calculateShipping(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CalculateShippingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof calculateShipping>>
+>;
+export type CalculateShippingMutationBody =
+  BodyType<ShippingCalculationRequest>;
+export type CalculateShippingMutationError = ErrorType<void>;
+
+/**
+ * @summary Calculate landed cement cost
+ */
+export const useCalculateShipping = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof calculateShipping>>,
+    TError,
+    { data: BodyType<ShippingCalculationRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof calculateShipping>>,
+  TError,
+  { data: BodyType<ShippingCalculationRequest> },
+  TContext
+> => {
+  return useMutation(getCalculateShippingMutationOptions(options));
+};

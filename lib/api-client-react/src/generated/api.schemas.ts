@@ -8,3 +8,81 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface FactorySummary {
+  id: string;
+  name: string;
+  regionId: string;
+  capacity?: number;
+  production2024?: number;
+  bagPrice?: number;
+  bulkPrice?: number;
+  marketShare?: number;
+}
+
+export interface RegionAnalytics {
+  id: string;
+  saCode: string;
+  nameAr: string;
+  nameEn: string;
+  factoryCount: number;
+  capacity: number;
+  production: number;
+  utilization: number;
+  avgBagPrice?: number;
+  minBagPrice?: number;
+  maxBagPrice?: number;
+  avgBulkPrice?: number;
+  marketShare?: number;
+  factories: FactorySummary[];
+}
+
+export interface ShippingCost {
+  id: string;
+  originRegionId: string;
+  destinationRegionId: string;
+  productType: string;
+  truckType: string;
+  costPerTon: number;
+  minimumCharge: number;
+  currency: string;
+  deliveryDaysMin: number;
+  deliveryDaysMax: number;
+  isActive: boolean;
+}
+
+export type ShippingCalculationRequestProductType =
+  (typeof ShippingCalculationRequestProductType)[keyof typeof ShippingCalculationRequestProductType];
+
+export const ShippingCalculationRequestProductType = {
+  bulk: "bulk",
+  bag: "bag",
+} as const;
+
+export interface ShippingCalculationRequest {
+  factoryId: string;
+  destinationRegionId: string;
+  productType: ShippingCalculationRequestProductType;
+  truckType: string;
+  tons: number;
+}
+
+export interface ShippingCalculation {
+  materialCost: number;
+  shippingCost: number;
+  totalLandedCost: number;
+  landedCostPerTon: number;
+  landedCostPerBag: number;
+  deliveryDaysMin: number;
+  deliveryDaysMax: number;
+  currency: string;
+  route?: ShippingCost;
+}
+
+export type GetRegionalAnalytics200 = {
+  regions: RegionAnalytics[];
+};
+
+export type GetShippingCosts200 = {
+  shippingCosts: ShippingCost[];
+};

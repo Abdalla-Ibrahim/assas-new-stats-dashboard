@@ -6,4 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./factorySummary";
+export * from "./getRegionalAnalytics200";
+export * from "./getShippingCosts200";
 export * from "./healthStatus";
+export * from "./regionAnalytics";
+export * from "./shippingCalculation";
+export * from "./shippingCalculationRequest";
+export * from "./shippingCalculationRequestProductType";
+export * from "./shippingCost";

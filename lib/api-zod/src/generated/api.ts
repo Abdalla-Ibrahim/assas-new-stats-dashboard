@@ -14,3 +14,97 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Returns canonical regions with aggregate factory metrics and factory breakdowns.
+ * @summary Region analytics
+ */
+export const GetRegionalAnalyticsResponse = zod.object({
+  regions: zod.array(
+    zod.object({
+      id: zod.string(),
+      saCode: zod.string(),
+      nameAr: zod.string(),
+      nameEn: zod.string(),
+      factoryCount: zod.number(),
+      capacity: zod.number(),
+      production: zod.number(),
+      utilization: zod.number(),
+      avgBagPrice: zod.number().optional(),
+      minBagPrice: zod.number().optional(),
+      maxBagPrice: zod.number().optional(),
+      avgBulkPrice: zod.number().optional(),
+      marketShare: zod.number().optional(),
+      factories: zod.array(
+        zod.object({
+          id: zod.string(),
+          name: zod.string(),
+          regionId: zod.string(),
+          capacity: zod.number().optional(),
+          production2024: zod.number().optional(),
+          bagPrice: zod.number().optional(),
+          bulkPrice: zod.number().optional(),
+          marketShare: zod.number().optional(),
+        }),
+      ),
+    }),
+  ),
+});
+
+/**
+ * @summary Active shipping costs
+ */
+export const GetShippingCostsResponse = zod.object({
+  shippingCosts: zod.array(
+    zod.object({
+      id: zod.string(),
+      originRegionId: zod.string(),
+      destinationRegionId: zod.string(),
+      productType: zod.string(),
+      truckType: zod.string(),
+      costPerTon: zod.number(),
+      minimumCharge: zod.number(),
+      currency: zod.string(),
+      deliveryDaysMin: zod.number(),
+      deliveryDaysMax: zod.number(),
+      isActive: zod.boolean(),
+    }),
+  ),
+});
+
+/**
+ * @summary Calculate landed cement cost
+ */
+export const CalculateShippingBody = zod.object({
+  factoryId: zod.string(),
+  destinationRegionId: zod.string(),
+  productType: zod.enum(["bulk", "bag"]),
+  truckType: zod.string(),
+  tons: zod.number(),
+});
+
+export const CalculateShippingResponse = zod.object({
+  materialCost: zod.number(),
+  shippingCost: zod.number(),
+  totalLandedCost: zod.number(),
+  landedCostPerTon: zod.number(),
+  landedCostPerBag: zod.number(),
+  deliveryDaysMin: zod.number(),
+  deliveryDaysMax: zod.number(),
+  currency: zod.string(),
+  route: zod
+    .object({
+      id: zod.string(),
+      originRegionId: zod.string(),
+      destinationRegionId: zod.string(),
+      productType: zod.string(),
+      truckType: zod.string(),
+      costPerTon: zod.number(),
+      minimumCharge: zod.number(),
+      currency: zod.string(),
+      deliveryDaysMin: zod.number(),
+      deliveryDaysMax: zod.number(),
+      isActive: zod.boolean(),
+    })
+    .optional(),
+});

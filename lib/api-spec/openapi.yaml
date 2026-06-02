@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: analytics
+    description: Regional analytics operations
+  - name: shipping
+    description: Shipping matrix and landed-cost operations
+  - name: events
+    description: Data-change event stream
 paths:
   /healthz:
     get:
@@ -24,6 +30,80 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /events:
+    get:
+      operationId: dataEvents
+      tags: [events]
+      summary: Data change event stream
+      description: Server-sent events stream that emits data-change events after admin writes.
+      responses:
+        "200":
+          description: Event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /analytics/regions:
+    get:
+      operationId: getRegionalAnalytics
+      tags: [analytics]
+      summary: Region analytics
+      description: Returns canonical regions with aggregate factory metrics and factory breakdowns.
+      responses:
+        "200":
+          description: Regional analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  regions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RegionAnalytics"
+                required:
+                  - regions
+  /shipping/costs:
+    get:
+      operationId: getShippingCosts
+      tags: [shipping]
+      summary: Active shipping costs
+      responses:
+        "200":
+          description: Active region shipping costs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shippingCosts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ShippingCost"
+                required:
+                  - shippingCosts
+  /shipping/calculate:
+    post:
+      operationId: calculateShipping
+      tags: [shipping]
+      summary: Calculate landed cement cost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShippingCalculationRequest"
+      responses:
+        "200":
+          description: Landed-cost calculation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShippingCalculation"
+        "400":
+          description: Invalid input
+        "404":
+          description: Factory or active route not found
 components:
   schemas:
     HealthStatus:
@@ -33,4 +113,156 @@ components:
           type: string
       required:
         - status
-
+    FactorySummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        regionId:
+          type: string
+        capacity:
+          type: number
+        production2024:
+          type: number
+        bagPrice:
+          type: number
+        bulkPrice:
+          type: number
+        marketShare:
+          type: number
+      required:
+        - id
+        - name
+        - regionId
+    RegionAnalytics:
+      type: object
+      properties:
+        id:
+          type: string
+        saCode:
+          type: string
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        factoryCount:
+          type: number
+        capacity:
+          type: number
+        production:
+          type: number
+        utilization:
+          type: number
+        avgBagPrice:
+          type: number
+        minBagPrice:
+          type: number
+        maxBagPrice:
+          type: number
+        avgBulkPrice:
+          type: number
+        marketShare:
+          type: number
+        factories:
+          type: array
+          items:
+            $ref: "#/components/schemas/FactorySummary"
+      required:
+        - id
+        - saCode
+        - nameAr
+        - nameEn
+        - factoryCount
+        - capacity
+        - production
+        - utilization
+        - factories
+    ShippingCost:
+      type: object
+      properties:
+        id:
+          type: string
+        originRegionId:
+          type: string
+        destinationRegionId:
+          type: string
+        productType:
+          type: string
+        truckType:
+          type: string
+        costPerTon:
+          type: number
+        minimumCharge:
+          type: number
+        currency:
+          type: string
+        deliveryDaysMin:
+          type: number
+        deliveryDaysMax:
+          type: number
+        isActive:
+          type: boolean
+      required:
+        - id
+        - originRegionId
+        - destinationRegionId
+        - productType
+        - truckType
+        - costPerTon
+        - minimumCharge
+        - currency
+        - deliveryDaysMin
+        - deliveryDaysMax
+        - isActive
+    ShippingCalculationRequest:
+      type: object
+      properties:
+        factoryId:
+          type: string
+        destinationRegionId:
+          type: string
+        productType:
+          type: string
+          enum: [bulk, bag]
+        truckType:
+          type: string
+        tons:
+          type: number
+      required:
+        - factoryId
+        - destinationRegionId
+        - productType
+        - truckType
+        - tons
+    ShippingCalculation:
+      type: object
+      properties:
+        materialCost:
+          type: number
+        shippingCost:
+          type: number
+        totalLandedCost:
+          type: number
+        landedCostPerTon:
+          type: number
+        landedCostPerBag:
+          type: number
+        deliveryDaysMin:
+          type: number
+        deliveryDaysMax:
+          type: number
+        currency:
+          type: string
+        route:
+          $ref: "#/components/schemas/ShippingCost"
+      required:
+        - materialCost
+        - shippingCost
+        - totalLandedCost
+        - landedCostPerTon
+        - landedCostPerBag
+        - deliveryDaysMin
+        - deliveryDaysMax
+        - currency

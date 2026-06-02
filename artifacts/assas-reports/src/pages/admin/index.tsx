@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle2, LogOut, MapPinned, Pencil, RefreshCw, Save } from "lucide-react";
+import { CheckCircle2, LogOut, MapPinned, Pencil, Plus, RefreshCw, Save, Truck } from "lucide-react";
 import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
 import {
   DEFAULT_MAP_DISPLAY_SETTINGS,
@@ -23,6 +23,23 @@ type SiteSetting = {
   updatedAt?: string;
 };
 
+type ShippingCost = {
+  id: string;
+  originRegionId: string;
+  destinationRegionId: string;
+  productType: string;
+  truckType: string;
+  costPerTon: number;
+  minimumCharge: number;
+  currency: string;
+  deliveryDaysMin: number;
+  deliveryDaysMax: number;
+  effectiveFrom?: string;
+  effectiveTo?: string | null;
+  isActive: boolean;
+  notes?: string | null;
+};
+
 type EditState = {
   bag_price: string;
   bulk_price: string;
@@ -38,6 +55,19 @@ type MapEditState = {
   is_active: boolean;
 };
 
+type ShippingEditState = {
+  origin_region_id: string;
+  destination_region_id: string;
+  product_type: string;
+  truck_type: string;
+  cost_per_ton: string;
+  minimum_charge: string;
+  delivery_days_min: string;
+  delivery_days_max: string;
+  is_active: boolean;
+  notes: string;
+};
+
 const toEditState = (factory: AdminFactory): EditState => ({
   bag_price: String(factory.bagPrice),
   bulk_price: String(factory.bulkPrice),
@@ -51,6 +81,19 @@ const toMapEditState = (factory: AdminFactory): MapEditState => ({
   region: factory.region,
   color: factory.color,
   is_active: factory.isActive !== false,
+});
+
+const toShippingEditState = (route: ShippingCost): ShippingEditState => ({
+  origin_region_id: route.originRegionId,
+  destination_region_id: route.destinationRegionId,
+  product_type: route.productType,
+  truck_type: route.truckType,
+  cost_per_ton: String(route.costPerTon),
+  minimum_charge: String(route.minimumCharge),
+  delivery_days_min: String(route.deliveryDaysMin),
+  delivery_days_max: String(route.deliveryDaysMax),
+  is_active: route.isActive,
+  notes: route.notes ?? "",
 });
 
 function settingToText(value: unknown) {
@@ -71,6 +114,7 @@ export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const { refetch } = useCementFactories();
   const [factories, setFactories] = useState<AdminFactory[]>([]);
+  const [shippingCosts, setShippingCosts] = useState<ShippingCost[]>([]);
   const [settings, setSettings] = useState<SiteSetting[]>([]);
   const [settingDrafts, setSettingDrafts] = useState<Record<string, string>>({});
   const [mapSettingsDraft, setMapSettingsDraft] = useState<MapDisplaySettings>(DEFAULT_MAP_DISPLAY_SETTINGS);
@@ -78,6 +122,8 @@ export default function AdminDashboard() {
   const [editDraft, setEditDraft] = useState<EditState | null>(null);
   const [mapEditingId, setMapEditingId] = useState<string | null>(null);
   const [mapEditDraft, setMapEditDraft] = useState<MapEditState | null>(null);
+  const [shippingEditingId, setShippingEditingId] = useState<string | null>(null);
+  const [shippingEditDraft, setShippingEditDraft] = useState<ShippingEditState | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -109,25 +155,28 @@ export default function AdminDashboard() {
     setError(null);
 
     try {
-      const [factoryResponse, settingsResponse] = await Promise.all([
+      const [factoryResponse, settingsResponse, shippingResponse] = await Promise.all([
         authedFetch("/api/admin/factories"),
         authedFetch("/api/admin/settings"),
+        authedFetch("/api/admin/shipping-costs"),
       ]);
 
-      if (factoryResponse.status === 401 || settingsResponse.status === 401) {
+      if (factoryResponse.status === 401 || settingsResponse.status === 401 || shippingResponse.status === 401) {
         localStorage.removeItem("assas_admin_token");
         setLocation("/admin/login");
         return;
       }
 
-      if (!factoryResponse.ok || !settingsResponse.ok) {
+      if (!factoryResponse.ok || !settingsResponse.ok || !shippingResponse.ok) {
         throw new Error("تعذر تحميل بيانات لوحة التحكم");
       }
 
       const factoryPayload = (await factoryResponse.json()) as { factories: AdminFactory[] };
       const settingsPayload = (await settingsResponse.json()) as { settings: SiteSetting[] };
+      const shippingPayload = (await shippingResponse.json()) as { shippingCosts: ShippingCost[] };
 
       setFactories(factoryPayload.factories);
+      setShippingCosts(shippingPayload.shippingCosts);
       setSettings(settingsPayload.settings);
       setSettingDrafts(
         Object.fromEntries(settingsPayload.settings.map((setting) => [setting.key, settingToText(setting.value)])),
@@ -163,6 +212,31 @@ export default function AdminDashboard() {
   const startMapEdit = (factory: AdminFactory) => {
     setMapEditingId(factory.id);
     setMapEditDraft(toMapEditState(factory));
+    setMessage(null);
+    setError(null);
+  };
+
+  const startShippingEdit = (route: ShippingCost) => {
+    setShippingEditingId(route.id);
+    setShippingEditDraft(toShippingEditState(route));
+    setMessage(null);
+    setError(null);
+  };
+
+  const startNewShippingRoute = () => {
+    setShippingEditingId("new");
+    setShippingEditDraft({
+      origin_region_id: "riyadh",
+      destination_region_id: "makkah",
+      product_type: "bulk",
+      truck_type: "tanker",
+      cost_per_ton: "45",
+      minimum_charge: "450",
+      delivery_days_min: "1",
+      delivery_days_max: "3",
+      is_active: true,
+      notes: "",
+    });
     setMessage(null);
     setError(null);
   };
@@ -232,6 +306,46 @@ export default function AdminDashboard() {
       await loadAdminData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "تعذر حفظ إعدادات الخريطة");
+    }
+  };
+
+  const saveShippingRoute = async () => {
+    if (!shippingEditDraft || !shippingEditingId) return;
+
+    setMessage(null);
+    setError(null);
+
+    try {
+      const payload = {
+        origin_region_id: shippingEditDraft.origin_region_id,
+        destination_region_id: shippingEditDraft.destination_region_id,
+        product_type: shippingEditDraft.product_type,
+        truck_type: shippingEditDraft.truck_type,
+        cost_per_ton: Number(shippingEditDraft.cost_per_ton),
+        minimum_charge: Number(shippingEditDraft.minimum_charge),
+        delivery_days_min: Number(shippingEditDraft.delivery_days_min),
+        delivery_days_max: Number(shippingEditDraft.delivery_days_max),
+        is_active: shippingEditDraft.is_active,
+        notes: shippingEditDraft.notes,
+      };
+      const response = await authedFetch(
+        shippingEditingId === "new" ? "/api/admin/shipping-costs" : `/api/admin/shipping-costs/${shippingEditingId}`,
+        {
+          method: shippingEditingId === "new" ? "POST" : "PUT",
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("تعذر حفظ مسار الشحن");
+      }
+
+      setShippingEditingId(null);
+      setShippingEditDraft(null);
+      setMessage("تم تحديث مصفوفة الشحن بنجاح");
+      await loadAdminData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "تعذر حفظ مسار الشحن");
     }
   };
 
@@ -638,6 +752,226 @@ export default function AdminDashboard() {
                     );
                   })
                 )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mb-8 overflow-hidden rounded-3xl border border-white/8 bg-slate-900">
+          <div className="border-b border-white/8 p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-secondary">
+                  <Truck className="h-4 w-4" />
+                  Shipping Matrix
+                </p>
+                <h2 className="mt-2 text-xl font-black">مصفوفة الشحن بين المناطق</h2>
+                <p className="mt-1 text-sm text-slate-500">إدارة تكلفة الطن وحد الشحن الأدنى ومدة التسليم لكل مسار.</p>
+              </div>
+              <button
+                type="button"
+                onClick={startNewShippingRoute}
+                className="inline-flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-sm font-black text-slate-950 hover:bg-secondary/90"
+              >
+                <Plus className="h-4 w-4" />
+                إضافة مسار
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1120px] text-right text-sm">
+              <thead className="bg-white/5 text-xs text-slate-400">
+                <tr>
+                  {["من", "إلى", "المنتج", "الشاحنة", "تكلفة الطن", "الحد الأدنى", "أيام من", "أيام إلى", "الحالة", "إجراء"].map((heading) => (
+                    <th key={heading} className="px-4 py-3 font-black">{heading}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {shippingEditingId === "new" && shippingEditDraft && (
+                  <tr className="border-t border-secondary/20 bg-secondary/5">
+                    <td className="px-4 py-3">
+                      <select
+                        value={shippingEditDraft.origin_region_id}
+                        onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, origin_region_id: event.target.value })}
+                        className="w-36 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                      >
+                        {REGION_OPTIONS.map((region) => <option key={region.id} value={region.id}>{region.name}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={shippingEditDraft.destination_region_id}
+                        onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, destination_region_id: event.target.value })}
+                        className="w-36 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                      >
+                        {REGION_OPTIONS.map((region) => <option key={region.id} value={region.id}>{region.name}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={shippingEditDraft.product_type}
+                        onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, product_type: event.target.value })}
+                        className="w-28 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                      >
+                        <option value="bulk">bulk</option>
+                        <option value="bag">bag</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={shippingEditDraft.truck_type}
+                        onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, truck_type: event.target.value })}
+                        className="w-32 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                      >
+                        <option value="tanker">tanker</option>
+                        <option value="trailer">trailer</option>
+                      </select>
+                    </td>
+                    {(["cost_per_ton", "minimum_charge", "delivery_days_min", "delivery_days_max"] as const).map((field) => (
+                      <td key={field} className="px-4 py-3">
+                        <input
+                          value={shippingEditDraft[field]}
+                          onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, [field]: event.target.value })}
+                          className="w-24 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                        />
+                      </td>
+                    ))}
+                    <td className="px-4 py-3">
+                      <label className="inline-flex items-center gap-2 text-sm font-bold text-white">
+                        <input
+                          type="checkbox"
+                          checked={shippingEditDraft.is_active}
+                          onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, is_active: event.target.checked })}
+                          className="h-4 w-4 accent-secondary"
+                        />
+                        نشط
+                      </label>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() => void saveShippingRoute()}
+                        className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-black text-slate-950"
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                        حفظ
+                      </button>
+                    </td>
+                  </tr>
+                )}
+                {shippingCosts.map((route) => {
+                  const isEditingRoute = shippingEditingId === route.id && shippingEditDraft;
+                  return (
+                    <tr key={route.id} className="border-t border-white/5 hover:bg-white/3">
+                      <td className="px-4 py-3">
+                        {isEditingRoute ? (
+                          <select
+                            value={shippingEditDraft.origin_region_id}
+                            onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, origin_region_id: event.target.value })}
+                            className="w-36 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                          >
+                            {REGION_OPTIONS.map((region) => <option key={region.id} value={region.id}>{region.name}</option>)}
+                          </select>
+                        ) : regionName(route.originRegionId)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditingRoute ? (
+                          <select
+                            value={shippingEditDraft.destination_region_id}
+                            onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, destination_region_id: event.target.value })}
+                            className="w-36 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                          >
+                            {REGION_OPTIONS.map((region) => <option key={region.id} value={region.id}>{region.name}</option>)}
+                          </select>
+                        ) : regionName(route.destinationRegionId)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditingRoute ? (
+                          <select
+                            value={shippingEditDraft.product_type}
+                            onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, product_type: event.target.value })}
+                            className="w-28 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                          >
+                            <option value="bulk">bulk</option>
+                            <option value="bag">bag</option>
+                          </select>
+                        ) : route.productType}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditingRoute ? (
+                          <select
+                            value={shippingEditDraft.truck_type}
+                            onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, truck_type: event.target.value })}
+                            className="w-32 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                          >
+                            <option value="tanker">tanker</option>
+                            <option value="trailer">trailer</option>
+                          </select>
+                        ) : route.truckType}
+                      </td>
+                      {isEditingRoute ? (
+                        <>
+                          {(["cost_per_ton", "minimum_charge", "delivery_days_min", "delivery_days_max"] as const).map((field) => (
+                            <td key={field} className="px-4 py-3">
+                              <input
+                                value={shippingEditDraft[field]}
+                                onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, [field]: event.target.value })}
+                                className="w-24 rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-white outline-none focus:border-secondary"
+                              />
+                            </td>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-4 py-3 font-black text-secondary">{Number(route.costPerTon).toFixed(2)}</td>
+                          <td className="px-4 py-3">{Number(route.minimumCharge).toFixed(2)}</td>
+                          <td className="px-4 py-3">{route.deliveryDaysMin}</td>
+                          <td className="px-4 py-3">{route.deliveryDaysMax}</td>
+                        </>
+                      )}
+                      <td className="px-4 py-3">
+                        {isEditingRoute ? (
+                          <label className="inline-flex items-center gap-2 text-sm font-bold text-white">
+                            <input
+                              type="checkbox"
+                              checked={shippingEditDraft.is_active}
+                              onChange={(event) => setShippingEditDraft({ ...shippingEditDraft, is_active: event.target.checked })}
+                              className="h-4 w-4 accent-secondary"
+                            />
+                            نشط
+                          </label>
+                        ) : (
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${route.isActive ? "bg-emerald-500/15 text-emerald-300" : "bg-red-500/15 text-red-300"}`}>
+                            {route.isActive ? "نشط" : "متوقف"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {isEditingRoute ? (
+                          <button
+                            type="button"
+                            onClick={() => void saveShippingRoute()}
+                            className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-black text-slate-950"
+                          >
+                            <Save className="h-3.5 w-3.5" />
+                            حفظ
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startShippingEdit(route)}
+                            className="inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white hover:bg-white/10"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            تعديل
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

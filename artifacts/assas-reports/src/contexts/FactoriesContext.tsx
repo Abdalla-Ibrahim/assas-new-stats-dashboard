@@ -23,6 +23,7 @@ type ApiFactory = Partial<CementFactory> & {
 
 type FactoriesContextValue = {
   factories: CementFactory[];
+  regionAnalytics: RegionAnalytics[];
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
@@ -30,6 +31,26 @@ type FactoriesContextValue = {
   TOTAL_CAPACITY: number;
   TOTAL_PRODUCTION: number;
   FACTORY_BY_REGION: Record<string, CementFactory[]>;
+};
+
+export type RegionAnalytics = {
+  id: string;
+  saCode: string;
+  nameAr: string;
+  nameEn: string;
+  displayOrder: number;
+  centroidLat: number;
+  centroidLng: number;
+  factoryCount: number;
+  capacity: number;
+  production: number;
+  utilization: number;
+  avgBagPrice: number;
+  minBagPrice: number;
+  maxBagPrice: number;
+  avgBulkPrice: number;
+  marketShare: number;
+  factories: CementFactory[];
 };
 
 const FactoriesContext = createContext<FactoriesContextValue | null>(null);
@@ -81,6 +102,7 @@ function computeFactoryByRegion(factories: CementFactory[]) {
 
 export function FactoriesProvider({ children }: { children: ReactNode }) {
   const [factories, setFactories] = useState<CementFactory[]>(STATIC_CEMENT_FACTORIES);
+  const [regionAnalytics, setRegionAnalytics] = useState<RegionAnalytics[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -89,15 +111,21 @@ export function FactoriesProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/factories`, {
-        headers: { Accept: "application/json" },
-      });
+      const [response, analyticsResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/factories`, {
+          headers: { Accept: "application/json" },
+        }),
+        fetch(`${API_BASE_URL}/api/analytics/regions`, {
+          headers: { Accept: "application/json" },
+        }),
+      ]);
 
-      if (!response.ok) {
+      if (!response.ok || !analyticsResponse.ok) {
         throw new Error(`API responded with ${response.status}`);
       }
 
       const payload = (await response.json()) as { factories?: ApiFactory[] };
+      const analyticsPayload = (await analyticsResponse.json()) as { regions?: RegionAnalytics[] };
       const nextFactories = Array.isArray(payload.factories) ? payload.factories.map(normalizeFactory) : [];
 
       if (nextFactories.length === 0) {
@@ -105,6 +133,7 @@ export function FactoriesProvider({ children }: { children: ReactNode }) {
       }
 
       setFactories(nextFactories);
+      setRegionAnalytics(Array.isArray(analyticsPayload.regions) ? analyticsPayload.regions : []);
       setError(null);
       setLastUpdated(new Date());
     } catch (err) {
@@ -119,8 +148,22 @@ export function FactoriesProvider({ children }: { children: ReactNode }) {
     void fetchFactories();
     const interval = window.setInterval(() => {
       void fetchFactories();
-    }, 60_000);
+    }, 300_000);
     return () => window.clearInterval(interval);
+  }, [fetchFactories]);
+
+  useEffect(() => {
+    if (typeof EventSource === "undefined") return;
+
+    const source = new EventSource(`${API_BASE_URL}/api/events`);
+    source.addEventListener("data-change", () => {
+      void fetchFactories();
+    });
+    source.onerror = () => {
+      source.close();
+    };
+
+    return () => source.close();
   }, [fetchFactories]);
 
   const value = useMemo<FactoriesContextValue>(() => {
@@ -130,6 +173,7 @@ export function FactoriesProvider({ children }: { children: ReactNode }) {
 
     return {
       factories,
+      regionAnalytics,
       isLoading,
       error,
       refetch: () => {
@@ -140,7 +184,7 @@ export function FactoriesProvider({ children }: { children: ReactNode }) {
       TOTAL_PRODUCTION,
       FACTORY_BY_REGION,
     };
-  }, [error, factories, fetchFactories, isLoading, lastUpdated]);
+  }, [error, factories, fetchFactories, isLoading, lastUpdated, regionAnalytics]);
 
   return <FactoriesContext.Provider value={value}>{children}</FactoriesContext.Provider>;
 }

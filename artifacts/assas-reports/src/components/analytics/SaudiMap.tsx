@@ -35,8 +35,9 @@ function getRegionName(saCode: string, fallback: string) {
 }
 
 export function SaudiMap() {
-  const { factories, FACTORY_BY_REGION } = useCementFactories();
+  const { factories, FACTORY_BY_REGION, regionAnalytics } = useCementFactories();
   const [mapSettings, setMapSettings] = useState(DEFAULT_MAP_DISPLAY_SETTINGS);
+  const [activeMetricValue, setActiveMetricValue] = useState(DEFAULT_MAP_DISPLAY_SETTINGS.heatmapMetric);
   const [activeId, setActiveId] = useState<RegionId>(DEFAULT_MAP_DISPLAY_SETTINGS.defaultRegionId);
   const lastDefaultRegionRef = useRef<RegionId>(DEFAULT_MAP_DISPLAY_SETTINGS.defaultRegionId);
 
@@ -52,6 +53,7 @@ export function SaudiMap() {
         const payload = (await response.json()) as { setting?: { value?: unknown } };
         const nextSettings = normalizeMapDisplaySettings(payload.setting?.value);
         setMapSettings(nextSettings);
+        setActiveMetricValue(nextSettings.heatmapMetric);
         setActiveId((current) => {
           if (current !== lastDefaultRegionRef.current) return current;
           lastDefaultRegionRef.current = nextSettings.defaultRegionId;
@@ -71,17 +73,20 @@ export function SaudiMap() {
   }, []);
 
   const activeSaudiId = REGION_ID_TO_SA_CODE[activeId];
-  const activeRegionName = getRegionName(activeSaudiId, FACTORY_BY_REGION[activeId]?.[0]?.region ?? "الرياض");
+  const activeRegionAnalytics = useMemo(
+    () => regionAnalytics.find((region) => region.id === activeId),
+    [activeId, regionAnalytics],
+  );
+  const activeRegionName =
+    activeRegionAnalytics?.nameAr ?? getRegionName(activeSaudiId, FACTORY_BY_REGION[activeId]?.[0]?.region ?? "الرياض");
 
-  const activeFactories = useMemo(() => FACTORY_BY_REGION[activeId] ?? [], [FACTORY_BY_REGION, activeId]);
-  const activeCapacity = useMemo(
-    () => activeFactories.reduce((sum, factory) => sum + factory.capacity, 0),
-    [activeFactories],
+  const activeFactories = useMemo(
+    () => activeRegionAnalytics?.factories ?? FACTORY_BY_REGION[activeId] ?? [],
+    [FACTORY_BY_REGION, activeId, activeRegionAnalytics],
   );
-  const activeProduction = useMemo(
-    () => activeFactories.reduce((sum, factory) => sum + factory.production2024, 0),
-    [activeFactories],
-  );
+  const activeCapacity = activeRegionAnalytics?.capacity ?? activeFactories.reduce((sum, factory) => sum + factory.capacity, 0);
+  const activeProduction =
+    activeRegionAnalytics?.production ?? activeFactories.reduce((sum, factory) => sum + factory.production2024, 0);
   const maxProduction = useMemo(
     () => Math.max(1, ...factories.map((factory) => factory.production2024)),
     [factories],
@@ -92,6 +97,17 @@ export function SaudiMap() {
       acc[region.id] = 0;
       return acc;
     }, {});
+
+    if (regionAnalytics.length > 0) {
+      regionAnalytics.forEach((region) => {
+        if (activeMetricValue === "factory_count") values[region.saCode] = region.factoryCount;
+        if (activeMetricValue === "production") values[region.saCode] = region.production;
+        if (activeMetricValue === "capacity") values[region.saCode] = region.capacity;
+        if (activeMetricValue === "utilization") values[region.saCode] = region.utilization;
+        if (activeMetricValue === "avg_bag_price") values[region.saCode] = region.avgBagPrice;
+      });
+      return values;
+    }
 
     const counts = SAUDI_REGIONS.reduce<Record<string, number>>((acc, region) => {
       acc[region.id] = 0;
@@ -108,22 +124,22 @@ export function SaudiMap() {
       productionByRegion[saCode] = (productionByRegion[saCode] ?? 0) + factory.production2024;
       capacityByRegion[saCode] = (capacityByRegion[saCode] ?? 0) + factory.capacity;
 
-      if (mapSettings.heatmapMetric === "factory_count") {
+      if (activeMetricValue === "factory_count") {
         values[saCode] = (values[saCode] ?? 0) + 1;
-      } else if (mapSettings.heatmapMetric === "production") {
+      } else if (activeMetricValue === "production") {
         values[saCode] = (values[saCode] ?? 0) + factory.production2024;
-      } else if (mapSettings.heatmapMetric === "capacity") {
+      } else if (activeMetricValue === "capacity") {
         values[saCode] = (values[saCode] ?? 0) + factory.capacity;
-      } else if (mapSettings.heatmapMetric === "avg_bag_price") {
+      } else if (activeMetricValue === "avg_bag_price") {
         values[saCode] = (values[saCode] ?? 0) + factory.bagPrice;
       }
     });
 
-    if (mapSettings.heatmapMetric === "avg_bag_price") {
+    if (activeMetricValue === "avg_bag_price") {
       Object.keys(values).forEach((saCode) => {
         values[saCode] = counts[saCode] ? Number((values[saCode] / counts[saCode]).toFixed(2)) : 0;
       });
-    } else if (mapSettings.heatmapMetric === "utilization") {
+    } else if (activeMetricValue === "utilization") {
       Object.keys(values).forEach((saCode) => {
         values[saCode] = capacityByRegion[saCode]
           ? Math.round((productionByRegion[saCode] / capacityByRegion[saCode]) * 100)
@@ -132,9 +148,9 @@ export function SaudiMap() {
     }
 
     return values;
-  }, [factories, mapSettings.heatmapMetric]);
+  }, [activeMetricValue, factories, regionAnalytics]);
 
-  const activeMetric = HEATMAP_METRIC_OPTIONS.find((option) => option.value === mapSettings.heatmapMetric);
+  const activeMetric = HEATMAP_METRIC_OPTIONS.find((option) => option.value === activeMetricValue);
 
   const handleRegionSelect = (saCode: string) => {
     const nextRegionId = SA_CODE_TO_REGION_ID[saCode];
@@ -167,6 +183,22 @@ export function SaudiMap() {
             className="relative w-full overflow-hidden rounded-2xl border border-white/5 px-3 py-4"
             style={{ background: "radial-gradient(ellipse at 60% 40%, #0d1f3c 0%, #060c18 100%)" }}
           >
+            <div className="mb-4 flex flex-wrap gap-2">
+              {HEATMAP_METRIC_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setActiveMetricValue(option.value)}
+                  className={`rounded-xl px-3 py-2 text-[11px] font-black transition ${
+                    activeMetricValue === option.value
+                      ? "bg-secondary text-slate-950"
+                      : "bg-white/8 text-white/65 hover:bg-white/15 hover:text-white"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             <SaudiHeatmap
               values={heatmapValues}
               unit={activeMetric?.unit ?? "مصنع"}

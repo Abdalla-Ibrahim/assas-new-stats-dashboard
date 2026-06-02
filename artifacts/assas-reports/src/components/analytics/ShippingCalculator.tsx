@@ -1,127 +1,107 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Truck, MapPin, Package, Calculator, Clock, Banknote } from "lucide-react";
-import { CEMENT_FACTORIES } from "@/data/cementFactories";
+import { useCementFactories } from "@/contexts/FactoriesContext";
+import { REGION_OPTIONS } from "@/data/mapSettings";
 
-const ORIGINS = [
-  { id: "riyadh", name: "الرياض (المقر الرئيسي)" },
-  { id: "dammam", name: "الدمام (فرع التوزيع)" },
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
+const PRODUCT_TYPES = [
+  { id: "bulk", name: "إسمنت سائب", truckType: "tanker" },
+  { id: "bag", name: "إسمنت مكيس", truckType: "trailer" },
 ];
-
-const DESTINATIONS: Record<string, { name: string; baseDistance: Record<string, number> }> = {
-  jeddah: { name: "جدة", baseDistance: { riyadh: 950, dammam: 1340 } },
-  makkah: { name: "مكة المكرمة", baseDistance: { riyadh: 870, dammam: 1260 } },
-  madinah: { name: "المدينة المنورة", baseDistance: { riyadh: 850, dammam: 1240 } },
-  taif: { name: "الطائف", baseDistance: { riyadh: 780, dammam: 1170 } },
-  abha: { name: "أبها", baseDistance: { riyadh: 1080, dammam: 1490 } },
-  tabuk: { name: "تبوك", baseDistance: { riyadh: 1280, dammam: 1670 } },
-  qassim: { name: "القصيم (بريدة)", baseDistance: { riyadh: 330, dammam: 720 } },
-  hail: { name: "حائل", baseDistance: { riyadh: 640, dammam: 1030 } },
-  jazan: { name: "جازان", baseDistance: { riyadh: 1280, dammam: 1690 } },
-  najran: { name: "نجران", baseDistance: { riyadh: 1130, dammam: 1380 } },
-  riyadhCity: { name: "داخل الرياض", baseDistance: { riyadh: 30, dammam: 410 } },
-  dammamCity: { name: "داخل الدمام", baseDistance: { riyadh: 410, dammam: 30 } },
-};
-
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
-  jeddah: { lat: 21.4858, lng: 39.1925 },
-  makkah: { lat: 21.3891, lng: 39.8579 },
-  madinah: { lat: 24.5247, lng: 39.5692 },
-  taif: { lat: 21.4373, lng: 40.5127 },
-  abha: { lat: 18.2164, lng: 42.5053 },
-  tabuk: { lat: 28.3838, lng: 36.555 },
-  qassim: { lat: 26.3592, lng: 43.9818 },
-  hail: { lat: 27.5114, lng: 41.7208 },
-  jazan: { lat: 16.8892, lng: 42.5611 },
-  najran: { lat: 17.5656, lng: 44.2289 },
-  riyadhCity: { lat: 24.7136, lng: 46.6753 },
-  dammamCity: { lat: 26.4207, lng: 50.0888 },
-};
-
-const FACTORY_REGION_COORDINATE_ID: Record<string, string> = {
-  asir: "abha",
-  eastern: "dammamCity",
-  hail: "hail",
-  jouf: "tabuk",
-  madinah: "madinah",
-  makkah: "makkah",
-  najran: "najran",
-  northern: "tabuk",
-  qassim: "qassim",
-  riyadh: "riyadhCity",
-  tabuk: "tabuk",
-};
-
-const FACTORY_COORDINATES = CEMENT_FACTORIES.reduce(
-  (acc, factory) => {
-    const cityId = FACTORY_REGION_COORDINATE_ID[factory.regionId];
-    if (cityId) {
-      acc[factory.id] = CITY_COORDINATES[cityId];
-    }
-    return acc;
-  },
-  {} as Record<string, { lat: number; lng: number }>
-);
 
 const TRUCK_TYPES = [
-  { id: "tanker", name: "صهريج إسمنت سائب (40 طن)", capacity: 40, ratePerKm: 4.2, fixed: 250 },
-  { id: "trailer", name: "مقطورة كيس إسمنت (35 طن)", capacity: 35, ratePerKm: 3.8, fixed: 200 },
-  { id: "small", name: "شاحنة صغيرة (10 طن)", capacity: 10, ratePerKm: 2.4, fixed: 120 },
+  { id: "tanker", name: "صهريج إسمنت سائب" },
+  { id: "trailer", name: "مقطورة أكياس" },
 ];
 
-const URGENCY = [
-  { id: "standard", name: "قياسي (48-72 ساعة)", multiplier: 1.0 },
-  { id: "express", name: "سريع (24-48 ساعة)", multiplier: 1.25 },
-  { id: "urgent", name: "عاجل (خلال 24 ساعة)", multiplier: 1.55 },
-];
-
-const formatSAR = (n: number) => new Intl.NumberFormat("ar-SA", { maximumFractionDigits: 0 }).format(n);
-
-const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-
-const calculateRoadDistance = (originId: string, destinationId: string) => {
-  if (originId === destinationId) {
-    return 30;
-  }
-
-  const originCity = FACTORY_COORDINATES[originId] ?? CITY_COORDINATES[originId];
-  const destinationCity = CITY_COORDINATES[destinationId];
-  const earthRadiusKm = 6371;
-  const latDistance = toRadians(destinationCity.lat - originCity.lat);
-  const lngDistance = toRadians(destinationCity.lng - originCity.lng);
-  const originLat = toRadians(originCity.lat);
-  const destinationLat = toRadians(destinationCity.lat);
-  const haversine =
-    Math.sin(latDistance / 2) ** 2 +
-    Math.cos(originLat) * Math.cos(destinationLat) * Math.sin(lngDistance / 2) ** 2;
-  const directDistance = 2 * earthRadiusKm * Math.asin(Math.sqrt(haversine));
-
-  return Math.round(directDistance * 1.25);
+type ShippingResult = {
+  materialCost: number;
+  shippingCost: number;
+  totalLandedCost: number;
+  landedCostPerTon: number;
+  landedCostPerBag: number;
+  deliveryDaysMin: number;
+  deliveryDaysMax: number;
+  currency: string;
+  route: {
+    costPerTon: number;
+    minimumCharge: number;
+    notes?: string | null;
+  };
 };
 
-export function ShippingCalculator() {
-  const [origin, setOrigin] = useState(CEMENT_FACTORIES[0].id);
-  const [destination, setDestination] = useState("jeddah");
-  const [tons, setTons] = useState(40);
-  const [truck, setTruck] = useState("tanker");
-  const [urgency, setUrgency] = useState("standard");
+const formatSAR = (value: number) =>
+  new Intl.NumberFormat("ar-SA", { maximumFractionDigits: 0 }).format(Number.isFinite(value) ? value : 0);
 
-  const result = useMemo(() => {
-    const dist = calculateRoadDistance(origin, destination);
-    const t = TRUCK_TYPES.find((x) => x.id === truck)!;
-    const u = URGENCY.find((x) => x.id === urgency)!;
-    const tripsNeeded = Math.max(1, Math.ceil(tons / t.capacity));
-    const baseCost = (dist * t.ratePerKm + t.fixed) * tripsNeeded;
-    const total = Math.round(baseCost * u.multiplier);
-    const perTon = Math.round(total / tons);
-    const days = u.id === "urgent" ? 1 : u.id === "express" ? 2 : 3;
-    const co2 = Math.round(dist * tripsNeeded * 0.92);
-    return { dist, tripsNeeded, total, perTon, days, co2 };
-  }, [origin, destination, tons, truck, urgency]);
+export function ShippingCalculator() {
+  const { factories } = useCementFactories();
+  const activeFactories = factories.filter((factory) => factory.bagPrice > 0 || factory.bulkPrice > 0);
+  const [factoryId, setFactoryId] = useState(activeFactories[0]?.id ?? "");
+  const [destinationRegionId, setDestinationRegionId] = useState("makkah");
+  const [productType, setProductType] = useState("bulk");
+  const [truckType, setTruckType] = useState("tanker");
+  const [tons, setTons] = useState(40);
+  const [result, setResult] = useState<ShippingResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!factoryId && activeFactories[0]?.id) {
+      setFactoryId(activeFactories[0].id);
+    }
+  }, [activeFactories, factoryId]);
+
+  const selectedFactory = useMemo(
+    () => factories.find((factory) => factory.id === factoryId),
+    [factories, factoryId],
+  );
+
+  useEffect(() => {
+    const product = PRODUCT_TYPES.find((item) => item.id === productType);
+    if (product) setTruckType(product.truckType);
+  }, [productType]);
+
+  useEffect(() => {
+    if (!factoryId || !destinationRegionId || !productType || !truckType || tons <= 0) return;
+
+    const controller = new AbortController();
+    setIsLoading(true);
+    setError(null);
+
+    fetch(`${API_BASE_URL}/api/shipping/calculate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ factoryId, destinationRegionId, productType, truckType, tons }),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error ?? "تعذر حساب تكلفة الشحن");
+        }
+        return response.json() as Promise<ShippingResult>;
+      })
+      .then((payload) => {
+        setResult(payload);
+        setError(null);
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        setResult(null);
+        setError(err instanceof Error ? err.message : "تعذر حساب تكلفة الشحن");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [destinationRegionId, factoryId, productType, tons, truckType]);
 
   return (
     <Card className="overflow-hidden border-slate-200 bg-white shadow-2xl">
@@ -131,8 +111,8 @@ export function ShippingCalculator() {
             <Calculator className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-xs font-bold text-secondary">حاسبة شحن الإسمنت</p>
-            <h3 className="text-2xl font-black">احسب تكلفة الشحن من نقطة لأخرى داخل المملكة</h3>
+            <p className="text-xs font-bold text-secondary">حاسبة تكلفة الوصول</p>
+            <h3 className="text-2xl font-black">سعر المصنع مضافا إليه شحن المنطقة</h3>
           </div>
         </div>
       </div>
@@ -141,12 +121,12 @@ export function ShippingCalculator() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
-                <MapPin className="h-3.5 w-3.5 text-primary" /> نقطة الانطلاق
+                <MapPin className="h-3.5 w-3.5 text-primary" /> المصنع
               </Label>
-              <Select value={origin} onValueChange={setOrigin}>
+              <Select value={factoryId} onValueChange={setFactoryId}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CEMENT_FACTORIES.map((factory) => (
+                  {activeFactories.map((factory) => (
                     <SelectItem key={factory.id} value={factory.id}>{factory.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -154,12 +134,43 @@ export function ShippingCalculator() {
             </div>
             <div>
               <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
-                <MapPin className="h-3.5 w-3.5 text-secondary" /> الوجهة
+                <MapPin className="h-3.5 w-3.5 text-secondary" /> منطقة التسليم
               </Label>
-              <Select value={destination} onValueChange={setDestination}>
+              <Select value={destinationRegionId} onValueChange={setDestinationRegionId}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {Object.entries(DESTINATIONS).map(([k, v]) => <SelectItem key={k} value={k}>{v.name}</SelectItem>)}
+                  {REGION_OPTIONS.map((region) => (
+                    <SelectItem key={region.id} value={region.id}>{region.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+                <Package className="h-3.5 w-3.5 text-primary" /> نوع المنتج
+              </Label>
+              <Select value={productType} onValueChange={setProductType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {PRODUCT_TYPES.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
+                <Truck className="h-3.5 w-3.5 text-primary" /> نوع الشاحنة
+              </Label>
+              <Select value={truckType} onValueChange={setTruckType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TRUCK_TYPES.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -167,7 +178,8 @@ export function ShippingCalculator() {
 
           <div>
             <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
-              <Package className="h-3.5 w-3.5 text-primary" /> الكمية بالطن: <span className="font-black text-secondary">{tons}</span>
+              <Package className="h-3.5 w-3.5 text-primary" /> الكمية بالطن:{" "}
+              <span className="font-black text-secondary">{tons}</span>
             </Label>
             <Input
               type="range"
@@ -175,83 +187,70 @@ export function ShippingCalculator() {
               max={400}
               step={5}
               value={tons}
-              onChange={(e) => setTons(Number(e.target.value))}
+              onChange={(event) => setTons(Number(event.target.value))}
               className="cursor-pointer accent-secondary"
             />
             <div className="mt-1 flex justify-between text-[11px] text-slate-500">
               <span>5 طن</span><span>200 طن</span><span>400 طن</span>
             </div>
           </div>
-
-          <div>
-            <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
-              <Truck className="h-3.5 w-3.5 text-primary" /> نوع الشاحنة
-            </Label>
-            <Select value={truck} onValueChange={setTruck}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {TRUCK_TYPES.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="mb-2 flex items-center gap-1.5 text-sm font-bold">
-              <Clock className="h-3.5 w-3.5 text-primary" /> سرعة التوصيل
-            </Label>
-            <div className="grid grid-cols-3 gap-2">
-              {URGENCY.map((u) => (
-                <button
-                  key={u.id}
-                  onClick={() => setUrgency(u.id)}
-                  className={`rounded-xl border p-3 text-right text-xs font-bold transition-all ${
-                    urgency === u.id
-                      ? "border-secondary bg-secondary/10 text-primary shadow-md"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-secondary/40"
-                  }`}
-                >
-                  {u.name}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-primary p-6 text-white shadow-inner">
-          <p className="text-xs font-bold text-secondary">عرض السعر التقديري</p>
+          <p className="text-xs font-bold text-secondary">التكلفة الإجمالية للوجهة</p>
           <div className="mt-3 flex items-end gap-2">
-            <p className="text-5xl font-black leading-none text-white">{formatSAR(result.total)}</p>
+            <p className="text-5xl font-black leading-none text-white">
+              {formatSAR(result?.totalLandedCost ?? 0)}
+            </p>
             <p className="mb-1.5 text-lg font-bold text-secondary">ريال</p>
           </div>
-          <p className="mt-1 text-xs text-white/60">شامل الوقود والسائق والرسوم التشغيلية الأساسية</p>
+          <p className="mt-1 text-xs text-white/60">
+            {selectedFactory ? `${selectedFactory.name} إلى ${REGION_OPTIONS.find((region) => region.id === destinationRegionId)?.name ?? destinationRegionId}` : "اختر مصنعاً لحساب التكلفة"}
+          </p>
+
+          {error && (
+            <div className="mt-4 rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-200">
+              {error}
+            </div>
+          )}
 
           <div className="mt-5 grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-white/10 p-3">
-              <p className="text-[10px] font-bold text-white/60">المسافة</p>
-              <p className="text-xl font-black text-white">{formatSAR(result.dist)} كم</p>
+              <p className="text-[10px] font-bold text-white/60">قيمة المادة</p>
+              <p className="text-xl font-black text-white">{formatSAR(result?.materialCost ?? 0)} ريال</p>
             </div>
             <div className="rounded-xl bg-white/10 p-3">
-              <p className="text-[10px] font-bold text-white/60">عدد الرحلات</p>
-              <p className="text-xl font-black text-white">{result.tripsNeeded}</p>
+              <p className="text-[10px] font-bold text-white/60">تكلفة الشحن</p>
+              <p className="text-xl font-black text-white">{formatSAR(result?.shippingCost ?? 0)} ريال</p>
             </div>
             <div className="rounded-xl bg-white/10 p-3">
-              <p className="text-[10px] font-bold text-white/60">تكلفة الطن</p>
-              <p className="text-xl font-black text-secondary">{formatSAR(result.perTon)} ريال</p>
+              <p className="text-[10px] font-bold text-white/60">التكلفة لكل طن</p>
+              <p className="text-xl font-black text-secondary">{formatSAR(result?.landedCostPerTon ?? 0)} ريال</p>
             </div>
             <div className="rounded-xl bg-white/10 p-3">
-              <p className="text-[10px] font-bold text-white/60">مدة التوصيل</p>
-              <p className="text-xl font-black text-white">{result.days} يوم</p>
+              <p className="text-[10px] font-bold text-white/60">مدة التسليم</p>
+              <p className="text-xl font-black text-white">
+                {result ? `${result.deliveryDaysMin}-${result.deliveryDaysMax} يوم` : isLoading ? "..." : "-"}
+              </p>
             </div>
           </div>
+
+          {productType === "bag" && result && (
+            <div className="mt-4 rounded-xl bg-white/10 p-3">
+              <p className="text-[10px] font-bold text-white/60">تكلفة الكيس بعد الشحن</p>
+              <p className="text-2xl font-black text-secondary">{result.landedCostPerBag.toFixed(2)} ريال</p>
+            </div>
+          )}
 
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-secondary/30 bg-secondary/10 p-3">
             <Banknote className="h-5 w-5 text-secondary" />
             <p className="text-xs leading-relaxed text-white/85">
-              تقدير ~{formatSAR(result.co2)} كجم CO₂ — يمكن تخفيضها بدمج الرحلات أو اختيار الشاحنة الأكبر.
+              السعر يستخدم مصفوفة الشحن الإدارية النشطة. حد الشحن الأدنى للمسار: {formatSAR(result?.route.minimumCharge ?? 0)} ريال.
             </p>
           </div>
 
           <Button className="mt-5 w-full bg-secondary font-black text-secondary-foreground shadow-lg hover:bg-secondary/90">
+            <Clock className="ml-2 h-4 w-4" />
             تثبيت العرض وطلب التواصل
           </Button>
         </div>
@@ -259,3 +258,4 @@ export function ShippingCalculator() {
     </Card>
   );
 }
+
