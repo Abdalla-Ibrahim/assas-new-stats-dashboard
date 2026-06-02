@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
-import { CheckCircle2, LogOut, MapPinned, Pencil, Plus, RefreshCw, Save, Truck } from "lucide-react";
+import { CheckCircle2, LogOut, MapPinned, Pencil, RefreshCw, Save, Truck } from "lucide-react";
 import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
 import {
   DEFAULT_MAP_DISPLAY_SETTINGS,
@@ -124,6 +124,8 @@ export default function AdminDashboard() {
   const [mapEditDraft, setMapEditDraft] = useState<MapEditState | null>(null);
   const [shippingEditingId, setShippingEditingId] = useState<string | null>(null);
   const [shippingEditDraft, setShippingEditDraft] = useState<ShippingEditState | null>(null);
+  const [matrixProductType, setMatrixProductType] = useState("bulk");
+  const [matrixTruckType, setMatrixTruckType] = useState("tanker");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -241,6 +243,25 @@ export default function AdminDashboard() {
     setError(null);
   };
 
+  const startShippingCellEdit = (originRegionId: string, destinationRegionId: string) => {
+    const route = shippingRouteMap.get(`${originRegionId}:${destinationRegionId}`);
+    setShippingEditingId(`${originRegionId}:${destinationRegionId}`);
+    setShippingEditDraft({
+      origin_region_id: originRegionId,
+      destination_region_id: destinationRegionId,
+      product_type: matrixProductType,
+      truck_type: matrixTruckType,
+      cost_per_ton: route ? String(route.costPerTon) : "",
+      minimum_charge: route ? String(route.minimumCharge) : "0",
+      delivery_days_min: route ? String(route.deliveryDaysMin) : "1",
+      delivery_days_max: route ? String(route.deliveryDaysMax) : "3",
+      is_active: route?.isActive ?? true,
+      notes: route?.notes ?? "",
+    });
+    setMessage(null);
+    setError(null);
+  };
+
   const saveFactory = async (factoryId: string) => {
     if (!editDraft) return;
 
@@ -316,6 +337,13 @@ export default function AdminDashboard() {
     setError(null);
 
     try {
+      const existingRoute = shippingCosts.find(
+        (item) =>
+          item.originRegionId === shippingEditDraft.origin_region_id &&
+          item.destinationRegionId === shippingEditDraft.destination_region_id &&
+          item.productType === shippingEditDraft.product_type &&
+          item.truckType === shippingEditDraft.truck_type,
+      );
       const payload = {
         origin_region_id: shippingEditDraft.origin_region_id,
         destination_region_id: shippingEditDraft.destination_region_id,
@@ -326,12 +354,12 @@ export default function AdminDashboard() {
         delivery_days_min: Number(shippingEditDraft.delivery_days_min),
         delivery_days_max: Number(shippingEditDraft.delivery_days_max),
         is_active: shippingEditDraft.is_active,
-        notes: shippingEditDraft.notes,
+        notes: shippingEditDraft.notes || "Updated from admin shipping matrix.",
       };
       const response = await authedFetch(
-        shippingEditingId === "new" ? "/api/admin/shipping-costs" : `/api/admin/shipping-costs/${shippingEditingId}`,
+        existingRoute ? `/api/admin/shipping-costs/${existingRoute.id}` : "/api/admin/shipping-costs",
         {
-          method: shippingEditingId === "new" ? "POST" : "PUT",
+          method: existingRoute ? "PUT" : "POST",
           body: JSON.stringify(payload),
         },
       );
@@ -401,6 +429,39 @@ export default function AdminDashboard() {
       production: regionFactories.reduce((sum, factory) => sum + factory.production2024, 0),
     };
   });
+
+  const shippingRouteMap = useMemo(() => {
+    const routes = new Map<string, ShippingCost>();
+    shippingCosts
+      .filter((route) => route.productType === matrixProductType && route.truckType === matrixTruckType)
+      .forEach((route) => {
+        routes.set(`${route.originRegionId}:${route.destinationRegionId}`, route);
+      });
+    return routes;
+  }, [matrixProductType, matrixTruckType, shippingCosts]);
+
+  const shippingMatrixSummary = useMemo(() => {
+    let active = 0;
+    let missing = 0;
+    let needsUpdate = 0;
+
+    REGION_OPTIONS.forEach((origin) => {
+      REGION_OPTIONS.forEach((destination) => {
+        const route = shippingRouteMap.get(`${origin.id}:${destination.id}`);
+        if (!route) {
+          missing += 1;
+        } else if (route.notes?.toLowerCase().includes("seeded") || route.notes?.toLowerCase().includes("baseline")) {
+          needsUpdate += 1;
+        } else if (route.isActive) {
+          active += 1;
+        } else {
+          missing += 1;
+        }
+      });
+    });
+
+    return { active, missing, needsUpdate };
+  }, [shippingRouteMap]);
 
   return (
     <div className="min-h-[calc(100vh-74px)] bg-slate-950 px-4 py-10 text-white">
@@ -768,18 +829,180 @@ export default function AdminDashboard() {
                 <h2 className="mt-2 text-xl font-black">مصفوفة الشحن بين المناطق</h2>
                 <p className="mt-1 text-sm text-slate-500">إدارة تكلفة الطن وحد الشحن الأدنى ومدة التسليم لكل مسار.</p>
               </div>
-              <button
-                type="button"
-                onClick={startNewShippingRoute}
-                className="inline-flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-sm font-black text-slate-950 hover:bg-secondary/90"
-              >
-                <Plus className="h-4 w-4" />
-                إضافة مسار
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <select
+                  value={matrixProductType}
+                  onChange={(event) => {
+                    setMatrixProductType(event.target.value);
+                    setShippingEditingId(null);
+                    setShippingEditDraft(null);
+                  }}
+                  className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm font-bold text-white outline-none focus:border-secondary"
+                >
+                  <option value="bulk">إسمنت سائب</option>
+                  <option value="bag">إسمنت مكيس</option>
+                </select>
+                <select
+                  value={matrixTruckType}
+                  onChange={(event) => {
+                    setMatrixTruckType(event.target.value);
+                    setShippingEditingId(null);
+                    setShippingEditDraft(null);
+                  }}
+                  className="rounded-xl border border-white/10 bg-slate-950 px-3 py-2 text-sm font-bold text-white outline-none focus:border-secondary"
+                >
+                  <option value="tanker">صهريج</option>
+                  <option value="trailer">مقطورة</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="border-b border-white/8 p-6">
+            <div className="mb-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                <p className="text-xs font-bold text-emerald-300">مسارات نشطة</p>
+                <p className="mt-1 text-2xl font-black text-white">{shippingMatrixSummary.active}</p>
+              </div>
+              <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 p-4">
+                <p className="text-xs font-bold text-amber-200">تحتاج تحديث</p>
+                <p className="mt-1 text-2xl font-black text-white">{shippingMatrixSummary.needsUpdate}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-600 bg-slate-800/60 p-4">
+                <p className="text-xs font-bold text-slate-300">مسارات مفقودة</p>
+                <p className="mt-1 text-2xl font-black text-white">{shippingMatrixSummary.missing}</p>
+              </div>
+            </div>
+
+            <div className="mb-3 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-400">
+              <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded bg-emerald-500/50" /> نشط</span>
+              <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded bg-amber-400/60" /> يحتاج تحديث</span>
+              <span className="inline-flex items-center gap-2"><span className="h-3 w-3 rounded bg-slate-700" /> لا يوجد مسار</span>
+            </div>
+
+            <div className="overflow-x-auto rounded-2xl border border-white/10">
+              <table className="w-full min-w-[1500px] border-collapse text-right text-xs">
+                <thead className="bg-slate-950 text-slate-300">
+                  <tr>
+                    <th className="sticky right-0 z-20 w-36 border-l border-white/10 bg-slate-950 px-3 py-3 font-black">
+                      من / إلى
+                    </th>
+                    {REGION_OPTIONS.map((destination) => (
+                      <th key={destination.id} className="min-w-24 border-l border-white/10 px-2 py-3 text-center font-black">
+                        {destination.name}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {REGION_OPTIONS.map((origin) => (
+                    <tr key={origin.id} className="border-t border-white/8">
+                      <th className="sticky right-0 z-10 border-l border-white/10 bg-slate-950 px-3 py-3 text-right font-black text-white">
+                        {origin.name}
+                      </th>
+                      {REGION_OPTIONS.map((destination) => {
+                        const cellKey = `${origin.id}:${destination.id}`;
+                        const route = shippingRouteMap.get(cellKey);
+                        const isEditingCell = shippingEditingId === cellKey && shippingEditDraft;
+                        const needsUpdate =
+                          !!route &&
+                          (route.notes?.toLowerCase().includes("seeded") || route.notes?.toLowerCase().includes("baseline"));
+                        const cellClass = !route
+                          ? "border-slate-700 bg-slate-800/70 text-slate-400"
+                          : needsUpdate
+                            ? "border-amber-400/30 bg-amber-400/15 text-amber-100"
+                            : route.isActive
+                              ? "border-emerald-400/25 bg-emerald-500/12 text-emerald-100"
+                              : "border-slate-600 bg-slate-700/60 text-slate-300";
+
+                        return (
+                          <td key={destination.id} className="border-l border-white/5 p-1.5 align-top">
+                            {isEditingCell ? (
+                              <div className="min-h-28 rounded-xl border border-secondary/50 bg-slate-950 p-2 shadow-lg shadow-black/20">
+                                <input
+                                  value={shippingEditDraft.cost_per_ton}
+                                  onChange={(event) =>
+                                    setShippingEditDraft({ ...shippingEditDraft, cost_per_ton: event.target.value })
+                                  }
+                                  className="w-full rounded-lg border border-white/10 bg-slate-900 px-2 py-1.5 text-center text-sm font-black text-white outline-none focus:border-secondary"
+                                  placeholder="التكلفة"
+                                />
+                                <div className="mt-2 grid grid-cols-2 gap-1">
+                                  <input
+                                    value={shippingEditDraft.delivery_days_min}
+                                    onChange={(event) =>
+                                      setShippingEditDraft({ ...shippingEditDraft, delivery_days_min: event.target.value })
+                                    }
+                                    className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1 text-center text-white outline-none focus:border-secondary"
+                                    title="أقل مدة تسليم"
+                                  />
+                                  <input
+                                    value={shippingEditDraft.delivery_days_max}
+                                    onChange={(event) =>
+                                      setShippingEditDraft({ ...shippingEditDraft, delivery_days_max: event.target.value })
+                                    }
+                                    className="rounded-lg border border-white/10 bg-slate-900 px-2 py-1 text-center text-white outline-none focus:border-secondary"
+                                    title="أعلى مدة تسليم"
+                                  />
+                                </div>
+                                <label className="mt-2 flex items-center justify-center gap-2 text-[10px] font-bold text-white/70">
+                                  <input
+                                    type="checkbox"
+                                    checked={shippingEditDraft.is_active}
+                                    onChange={(event) =>
+                                      setShippingEditDraft({ ...shippingEditDraft, is_active: event.target.checked })
+                                    }
+                                    className="h-3.5 w-3.5 accent-secondary"
+                                  />
+                                  نشط
+                                </label>
+                                <div className="mt-2 flex gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => void saveShippingRoute()}
+                                    className="flex-1 rounded-lg bg-secondary px-2 py-1.5 text-[10px] font-black text-slate-950"
+                                  >
+                                    حفظ
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setShippingEditingId(null);
+                                      setShippingEditDraft(null);
+                                    }}
+                                    className="rounded-lg border border-white/10 px-2 py-1.5 text-[10px] font-bold text-white/70"
+                                  >
+                                    إلغاء
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => startShippingCellEdit(origin.id, destination.id)}
+                                className={`h-20 w-full rounded-xl border px-2 py-2 text-center transition hover:border-secondary hover:bg-secondary/10 ${cellClass}`}
+                                title={`${origin.name} إلى ${destination.name}`}
+                              >
+                                <span className="block text-base font-black">
+                                  {route ? Number(route.costPerTon).toFixed(2) : "—"}
+                                </span>
+                                <span className="mt-1 block text-[10px] font-bold opacity-75">
+                                  {route ? `${route.deliveryDaysMin}-${route.deliveryDaysMax} يوم` : "لا يوجد"}
+                                </span>
+                                {needsUpdate && <span className="mt-1 block text-[9px] font-black text-amber-200">تحديث</span>}
+                              </button>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="hidden">
             <table className="w-full min-w-[1120px] text-right text-sm">
               <thead className="bg-white/5 text-xs text-slate-400">
                 <tr>
