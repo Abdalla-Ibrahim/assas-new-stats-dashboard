@@ -367,7 +367,11 @@ router.put("/factories/:id", async (req: AuthenticatedRequest, res, next) => {
       });
     }
 
-    await logAdminChange(req, "factory", updated.id, "update", mapFactory(existing), mapFactory(updated));
+    try {
+      await logAdminChange(req, "factory", updated.id, "update", mapFactory(existing), mapFactory(updated));
+    } catch {
+      // Keep factory edits successful even if the audit log table is unavailable.
+    }
     publishDataChange("factory", updated.id);
 
     return res.json({ factory: mapFactory(updated) });
