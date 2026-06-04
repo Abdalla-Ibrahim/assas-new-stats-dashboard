@@ -8,6 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Clock, Mail, MapPin, Phone, Send, Truck, CheckCircle2, ArrowLeft } from "lucide-react";
 import { BrandLogo } from "@/components/brand/BrandLogo";
+import {
+  CONTACT_ADDRESS_HAFR_AL_BATIN,
+  CONTACT_ADDRESS_RIYADH,
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+} from "@/data/contactInfo";
 import officeImage from "@assets/Gemini_Generated_Image_rid8qnrid8qnrid8_1776938760079.png";
 import truckFront from "@assets/Gemini_Generated_Image_yw5889yw5889yw58_1776938787664.png";
 
@@ -20,12 +26,13 @@ const formSchema = z.object({
 });
 
 const locations = [
-  { city: "الرياض", role: "المقر الرئيسي", address: "شارع الصناعة، الرياض", icon: "🏢", accent: "#f5b800" },
-  { city: "الدمام", role: "فرع التوزيع", address: "المنطقة الصناعية، الدمام", icon: "🏭", accent: "#3b82f6" },
-  { city: "حفر الباطن", role: "نقطة تشغيل", address: "حفر الباطن — المنطقة الشرقية", icon: "📍", accent: "#10b981" },
+  { city: "الرياض", role: "المقر الرئيسي", address: CONTACT_ADDRESS_RIYADH, icon: "🏢", accent: "#f5b800" },
+  { city: "حفر الباطن", role: "نقطة تشغيل", address: CONTACT_ADDRESS_HAFR_AL_BATIN, icon: "📍", accent: "#10b981" },
 ];
 
 const infoItems = [
+  { icon: Phone, title: "رقم التواصل", desc: CONTACT_PHONE },
+  { icon: Mail, title: "البريد الإلكتروني", desc: CONTACT_EMAIL },
   { icon: Building2, title: "مجالات الخدمة", desc: "توريد الإسمنت، النقل اللوجستي، وقطع الغيار." },
   { icon: Truck, title: "نطاق التغطية", desc: "جميع مناطق ومدن المملكة دون استثناء، مع خدمة للقرى والهجر." },
   { icon: Clock, title: "زمن التوصيل", desc: "24-72 ساعة حسب الكمية والموقع الدقيق." },
@@ -92,7 +99,7 @@ export default function Contact() {
             <div className="section-label mx-auto mb-3">المقرات التشغيلية</div>
             <h2 className="text-3xl font-black text-white">حضور ميداني في قلب المملكة</h2>
           </div>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2">
             {locations.map((loc) => (
               <div
                 key={loc.city}

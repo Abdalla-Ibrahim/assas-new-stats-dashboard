@@ -2,6 +2,12 @@ import { Link } from "wouter";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ArrowLeft, Globe, Mail, Phone, MapPin } from "lucide-react";
 import { useLang } from "@/contexts/LanguageContext";
+import {
+  CONTACT_ADDRESS_HAFR_AL_BATIN,
+  CONTACT_ADDRESS_RIYADH,
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+} from "@/data/contactInfo";
 
 export function Footer() {
   const { t } = useLang();
@@ -53,9 +59,10 @@ export function Footer() {
           {/* Contact pills */}
           <div className="space-y-3">
             {[
-              { icon: MapPin, text: t.footer.address },
-              { icon: Phone, text: "+966 5X XXX XXXX" },
-              { icon: Mail, text: "info@assas-alemaar.sa" },
+              { icon: MapPin, text: CONTACT_ADDRESS_RIYADH },
+              { icon: MapPin, text: CONTACT_ADDRESS_HAFR_AL_BATIN },
+              { icon: Phone, text: CONTACT_PHONE },
+              { icon: Mail, text: CONTACT_EMAIL },
               { icon: Globe, text: t.footer.coverage },
             ].map((item) => {
               const Icon = item.icon;

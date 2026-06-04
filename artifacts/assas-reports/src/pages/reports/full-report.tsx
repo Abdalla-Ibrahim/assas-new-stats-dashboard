@@ -37,6 +37,7 @@ import {
 } from "recharts";
 import { useCementFactories } from "@/contexts/FactoriesContext";
 import { REGION_OPTIONS } from "@/data/mapSettings";
+import { CONTACT_ADDRESS_HAFR_AL_BATIN, CONTACT_ADDRESS_RIYADH } from "@/data/contactInfo";
 
 const YEARS = Array.from({ length: 27 }, (_, index) => String(2026 - index));
 const MONTHS = [
@@ -76,9 +77,8 @@ const reportImages = [
 ];
 
 const locations = [
-  { city: "الرياض", role: "المقر الرئيسي", address: "شارع الصناعة، الرياض — صندوق بريد: 12345" },
-  { city: "الدمام", role: "فرع التوزيع", address: "المنطقة الصناعية، الدمام" },
-  { city: "حفر الباطن", role: "نقطة تشغيل", address: "حفر الباطن — صندوق بريد: 12345" },
+  { city: "الرياض", role: "المقر الرئيسي", address: CONTACT_ADDRESS_RIYADH },
+  { city: "حفر الباطن", role: "نقطة تشغيل", address: CONTACT_ADDRESS_HAFR_AL_BATIN },
 ];
 
 function format(value: number) {
