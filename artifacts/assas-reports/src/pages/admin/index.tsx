@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { CheckCircle2, History, LogOut, MapPinned, Pencil, Plus, RefreshCw, Save, Trash2, Truck } from "lucide-react";
 import { useCementFactories, type CementFactory } from "@/contexts/FactoriesContext";
@@ -12,6 +12,8 @@ import {
 } from "@/data/mapSettings";
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
+const getAdminToken = () => (typeof window !== "undefined" ? localStorage.getItem("assas_admin_token") : null);
 
 type AdminFactory = CementFactory & {
   isActive?: boolean;
@@ -216,22 +218,24 @@ export default function AdminDashboard() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [savingFactoryId, setSavingFactoryId] = useState<string | null>(null);
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("assas_admin_token") : null;
+  const token = getAdminToken();
 
   const authedFetch = useCallback(
     (path: string, init: RequestInit = {}) => {
-      if (!token) throw new Error("Missing admin token");
+      const currentToken = getAdminToken();
+      if (!currentToken) throw new Error("Missing admin token");
       return fetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
           ...(init.headers ?? {}),
         },
       });
     },
-    [token],
+    [],
   );
 
   const loadAdminData = useCallback(async () => {
@@ -431,24 +435,35 @@ export default function AdminDashboard() {
 
     setMessage(null);
     setError(null);
+    setSavingFactoryId(factoryId);
 
     try {
+      const payload = factoryPayloadFromDraft(editDraft);
       const response = await authedFetch(`/api/admin/factories/${factoryId}`, {
         method: "PUT",
-        body: JSON.stringify(factoryPayloadFromDraft(editDraft)),
+        body: JSON.stringify(payload),
       });
+      const responsePayload = (await response.json()) as { factory?: AdminFactory; error?: string };
 
       if (!response.ok) {
-        throw new Error("تعذر حفظ بيانات المصنع");
+        throw new Error(responsePayload.error ?? "تعذر حفظ بيانات المصنع");
       }
 
+      if (!responsePayload.factory) {
+        throw new Error("تعذر قراءة بيانات المصنع بعد الحفظ");
+      }
+
+      setFactories((current) =>
+        current.map((factory) => (factory.id === factoryId ? responsePayload.factory as AdminFactory : factory)),
+      );
       setEditingId(null);
       setEditDraft(null);
       setMessage("تم تحديث بيانات المصنع بنجاح");
       refetch();
-      await loadAdminData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "تعذر حفظ البيانات");
+    } finally {
+      setSavingFactoryId(null);
     }
   };
 
@@ -1005,7 +1020,7 @@ export default function AdminDashboard() {
                   factories.map((factory) => {
                     const isEditing = editingId === factory.id && editDraft;
                     return (
-                      <>
+                      <Fragment key={factory.id}>
                       <tr key={factory.id} className="border-t border-white/5 hover:bg-white/3">
                         <td className="px-4 py-3">
                           <div className="font-black text-white">{factory.name}</div>
@@ -1043,10 +1058,11 @@ export default function AdminDashboard() {
                               <button
                                 type="button"
                                 onClick={() => void saveFactory(factory.id)}
+                                disabled={savingFactoryId === factory.id}
                                 className="inline-flex items-center gap-1 rounded-xl bg-secondary px-3 py-2 text-xs font-black text-slate-950"
                               >
                                 <Save className="h-3.5 w-3.5" />
-                                حفظ
+                                {savingFactoryId === factory.id ? "جار الحفظ..." : "حفظ"}
                               </button>
                               <button
                                 type="button"
@@ -1087,10 +1103,31 @@ export default function AdminDashboard() {
                         <tr className="border-t border-secondary/15 bg-secondary/5">
                           <td colSpan={8} className="px-4 py-4">
                             {renderFactoryForm(editDraft, (patch) => setEditDraft((current) => (current ? { ...current, ...patch } : current)), false)}
+                            <div className="mt-4 flex flex-wrap justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void saveFactory(factory.id)}
+                                disabled={savingFactoryId === factory.id}
+                                className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2 text-sm font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <Save className="h-4 w-4" />
+                                {savingFactoryId === factory.id ? "جار الحفظ..." : "حفظ بيانات المصنع"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingId(null);
+                                  setEditDraft(null);
+                                }}
+                                className="rounded-xl border border-white/10 px-4 py-2 text-sm font-bold text-white"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       )}
-                      </>
+                      </Fragment>
                     );
                   })
                 )}

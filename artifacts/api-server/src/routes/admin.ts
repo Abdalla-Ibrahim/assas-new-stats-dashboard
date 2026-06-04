@@ -54,12 +54,19 @@ function buildFactoryUpdate(body: Body): Partial<NewCementFactory> {
     ["region", "region"],
     ["regionId", "region_id"],
     ["color", "color"],
-    ["stockSymbol", "stock_symbol"],
   ] as const;
 
   for (const [camel, snake] of textFields) {
     const value = asText(get(body, camel, snake));
     if (value !== undefined) updates[camel] = value;
+  }
+
+  const stockSymbol = get(body, "stockSymbol", "stock_symbol");
+  if (stockSymbol === null || stockSymbol === "") {
+    updates.stockSymbol = null;
+  } else {
+    const value = asText(stockSymbol);
+    if (value !== undefined) updates.stockSymbol = value;
   }
 
   const decimalFields = [
@@ -354,17 +361,21 @@ router.put("/factories/:id", async (req: AuthenticatedRequest, res, next) => {
       .returning();
 
     if (priceChanged) {
-      await db.insert(schema.priceHistory).values({
-        factoryId: updated.id,
-        bagPrice: String(updated.bagPrice),
-        bulkPrice: String(updated.bulkPrice),
-        productType: "cement",
-        unit: "bag_ton",
-        source: "admin",
-        status: "published",
-        adminUserId: req.admin?.id ?? null,
-        recordedAt: new Date(),
-      });
+      try {
+        await db.insert(schema.priceHistory).values({
+          factoryId: updated.id,
+          bagPrice: String(updated.bagPrice),
+          bulkPrice: String(updated.bulkPrice),
+          productType: "cement",
+          unit: "bag_ton",
+          source: "admin",
+          status: "published",
+          adminUserId: req.admin?.id ?? null,
+          recordedAt: new Date(),
+        });
+      } catch {
+        // Keep the factory save successful if a historical side effect fails.
+      }
     }
 
     try {
