@@ -12,6 +12,7 @@ import {
 } from "@/data/mapSettings";
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+const DEBUG_ADMIN_SAVE = import.meta.env.DEV || import.meta.env.VITE_DEBUG_ADMIN_SAVE === "true";
 
 const getAdminToken = () => (typeof window !== "undefined" ? localStorage.getItem("assas_admin_token") : null);
 
@@ -162,6 +163,12 @@ const factoryPayloadFromDraft = (draft: EditState) => ({
   is_active: draft.is_active,
 });
 
+const debugAdminSave = (label: string, payload?: unknown) => {
+  if (DEBUG_ADMIN_SAVE) {
+    console.log(`[admin factory save] ${label}`, payload);
+  }
+};
+
 const toMapEditState = (factory: AdminFactory): MapEditState => ({
   region_id: factory.regionId,
   region: factory.region,
@@ -226,6 +233,9 @@ export default function AdminDashboard() {
     (path: string, init: RequestInit = {}) => {
       const currentToken = getAdminToken();
       if (!currentToken) throw new Error("Missing admin token");
+      if (DEBUG_ADMIN_SAVE && path.startsWith("/api/admin/factories/") && init.method === "PUT") {
+        console.log("[admin factory save] authedFetch", { path, method: init.method, hasBody: Boolean(init.body) });
+      }
       return fetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers: {
@@ -439,11 +449,13 @@ export default function AdminDashboard() {
 
     try {
       const payload = factoryPayloadFromDraft(editDraft);
+      debugAdminSave("payload", payload);
       const response = await authedFetch(`/api/admin/factories/${factoryId}`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
       const responsePayload = (await response.json()) as { factory?: AdminFactory; error?: string };
+      debugAdminSave("response", { status: response.status, ok: response.ok, body: responsePayload });
 
       if (!response.ok) {
         throw new Error(responsePayload.error ?? "تعذر حفظ بيانات المصنع");

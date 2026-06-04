@@ -159,9 +159,6 @@ export function FactoriesProvider({ children }: { children: ReactNode }) {
     source.addEventListener("data-change", () => {
       void fetchFactories();
     });
-    source.onerror = () => {
-      source.close();
-    };
 
     return () => source.close();
   }, [fetchFactories]);

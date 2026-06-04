@@ -6,7 +6,7 @@ import { mapFactory } from "../lib/factoryMapper";
 import { publishDataChange } from "../lib/dataEvents";
 import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { mapShippingCost } from "./shipping";
-import type { NewCementFactory, NewShippingCost } from "@workspace/db/schema";
+import type { CementFactory, NewCementFactory, NewShippingCost } from "@workspace/db/schema";
 
 const require = createRequire(import.meta.url);
 const bcrypt = require("bcryptjs") as typeof import("bcryptjs");
@@ -116,7 +116,6 @@ function assertNonNegativeFactoryValues(values: Partial<NewCementFactory>) {
     "capacity",
     "production",
     "stockPrice",
-    "stockChangePct",
     "founded",
     "employees",
   ] as const;
@@ -127,6 +126,19 @@ function assertNonNegativeFactoryValues(values: Partial<NewCementFactory>) {
       throw new Error(`${field} cannot be negative.`);
     }
   }
+}
+
+function buildPriceHistoryNotes(existing: CementFactory, updated: CementFactory) {
+  return JSON.stringify({
+    bagPrice: {
+      old: String(existing.bagPrice),
+      new: String(updated.bagPrice),
+    },
+    bulkPrice: {
+      old: String(existing.bulkPrice),
+      new: String(updated.bulkPrice),
+    },
+  });
 }
 
 function buildShippingUpdate(body: Body): Partial<NewShippingCost> {
@@ -334,35 +346,33 @@ router.get("/changelog", async (req, res, next) => {
 router.put("/factories/:id", async (req: AuthenticatedRequest, res, next) => {
   try {
     const factoryId = String(req.params.id);
-    const [existing] = await db
-      .select()
-      .from(schema.cementFactories)
-      .where(eq(schema.cementFactories.id, factoryId))
-      .limit(1);
+    const result = await db.transaction(async (tx) => {
+      const [existing] = await tx
+        .select()
+        .from(schema.cementFactories)
+        .where(eq(schema.cementFactories.id, factoryId))
+        .limit(1);
 
-    if (!existing) {
-      return res.status(404).json({ error: "Factory not found." });
-    }
+      if (!existing) return null;
 
-    const updates = buildFactoryUpdate(req.body as Body);
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({ error: "No valid factory fields provided." });
-    }
-    assertNonNegativeFactoryValues(updates);
+      const updates = buildFactoryUpdate(req.body as Body);
+      if (Object.keys(updates).length === 0) {
+        throw new Error("No valid factory fields provided.");
+      }
+      assertNonNegativeFactoryValues(updates);
 
-    const priceChanged =
-      (updates.bagPrice !== undefined && Number(updates.bagPrice) !== Number(existing.bagPrice)) ||
-      (updates.bulkPrice !== undefined && Number(updates.bulkPrice) !== Number(existing.bulkPrice));
+      const priceChanged =
+        (updates.bagPrice !== undefined && Number(updates.bagPrice) !== Number(existing.bagPrice)) ||
+        (updates.bulkPrice !== undefined && Number(updates.bulkPrice) !== Number(existing.bulkPrice));
 
-    const [updated] = await db
-      .update(schema.cementFactories)
-      .set(updates)
-      .where(eq(schema.cementFactories.id, factoryId))
-      .returning();
+      const [updated] = await tx
+        .update(schema.cementFactories)
+        .set(updates)
+        .where(eq(schema.cementFactories.id, factoryId))
+        .returning();
 
-    if (priceChanged) {
-      try {
-        await db.insert(schema.priceHistory).values({
+      if (priceChanged) {
+        await tx.insert(schema.priceHistory).values({
           factoryId: updated.id,
           bagPrice: String(updated.bagPrice),
           bulkPrice: String(updated.bulkPrice),
@@ -371,12 +381,19 @@ router.put("/factories/:id", async (req: AuthenticatedRequest, res, next) => {
           source: "admin",
           status: "published",
           adminUserId: req.admin?.id ?? null,
+          notes: buildPriceHistoryNotes(existing, updated),
           recordedAt: new Date(),
         });
-      } catch {
-        // Keep the factory save successful if a historical side effect fails.
       }
+
+      return { existing, updated };
+    });
+
+    if (!result) {
+      return res.status(404).json({ error: "Factory not found." });
     }
+
+    const { existing, updated } = result;
 
     try {
       await logAdminChange(req, "factory", updated.id, "update", mapFactory(existing), mapFactory(updated));
@@ -388,6 +405,9 @@ router.put("/factories/:id", async (req: AuthenticatedRequest, res, next) => {
     return res.json({ factory: mapFactory(updated) });
   } catch (err) {
     if (err instanceof Error && err.message.includes("cannot be negative")) {
+      return res.status(400).json({ error: err.message });
+    }
+    if (err instanceof Error && err.message === "No valid factory fields provided.") {
       return res.status(400).json({ error: err.message });
     }
     return next(err);

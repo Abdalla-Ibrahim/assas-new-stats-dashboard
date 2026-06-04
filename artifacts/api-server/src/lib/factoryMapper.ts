@@ -6,6 +6,26 @@ const toNumber = (value: string | number | null | undefined) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+function parsePriceHistoryNotes(notes: string | null) {
+  if (!notes) return {};
+
+  try {
+    const parsed = JSON.parse(notes) as {
+      bagPrice?: { old?: string | number; new?: string | number };
+      bulkPrice?: { old?: string | number; new?: string | number };
+    };
+
+    return {
+      oldBagPrice: parsed.bagPrice?.old === undefined ? undefined : toNumber(parsed.bagPrice.old),
+      newBagPrice: parsed.bagPrice?.new === undefined ? undefined : toNumber(parsed.bagPrice.new),
+      oldBulkPrice: parsed.bulkPrice?.old === undefined ? undefined : toNumber(parsed.bulkPrice.old),
+      newBulkPrice: parsed.bulkPrice?.new === undefined ? undefined : toNumber(parsed.bulkPrice.new),
+    };
+  } catch {
+    return {};
+  }
+}
+
 export function mapFactory(factory: CementFactory) {
   return {
     id: factory.id,
@@ -38,6 +58,7 @@ export function mapPriceHistory(row: PriceHistory) {
     factoryId: row.factoryId,
     bagPrice: toNumber(row.bagPrice),
     bulkPrice: toNumber(row.bulkPrice),
+    ...parsePriceHistoryNotes(row.notes),
     recordedAt: row.recordedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
