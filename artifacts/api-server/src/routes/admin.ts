@@ -19,6 +19,14 @@ type JsonRecord = Record<string, unknown>;
 
 const get = (body: Body, camelKey: string, snakeKey = camelKey) => body[camelKey] ?? body[snakeKey];
 const asText = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : undefined);
+const asFactoryName = (value: unknown) => {
+  const text = asText(value);
+  if (!text) return undefined;
+  if (/^\?+(?:\s+\?+)*$/.test(text)) return undefined;
+  if (text.includes("�")) return undefined;
+  if (/[ØÙ]/.test(text)) return undefined;
+  return text;
+};
 const asBool = (value: unknown) => (typeof value === "boolean" ? value : undefined);
 const asInt = (value: unknown) => {
   if (value === undefined || value === null || value === "") return undefined;
@@ -48,9 +56,13 @@ function jwtSecret() {
 function buildFactoryUpdate(body: Body): Partial<NewCementFactory> {
   const updates: Partial<NewCementFactory> = {};
 
+  const nameAr = asFactoryName(get(body, "nameAr", "name_ar"));
+  if (nameAr !== undefined) updates.nameAr = nameAr;
+
+  const nameEn = asFactoryName(get(body, "nameEn", "name_en"));
+  if (nameEn !== undefined) updates.nameEn = nameEn;
+
   const textFields = [
-    ["nameAr", "name_ar"],
-    ["nameEn", "name_en"],
     ["region", "region"],
     ["regionId", "region_id"],
     ["color", "color"],

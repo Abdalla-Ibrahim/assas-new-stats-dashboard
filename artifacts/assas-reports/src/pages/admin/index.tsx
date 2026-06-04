@@ -144,7 +144,7 @@ const newFactoryDraft = (): EditState => ({
 const factoryPayloadFromDraft = (draft: EditState) => ({
   id: draft.id?.trim(),
   name_ar: draft.name_ar,
-  name_en: draft.name_en || draft.name_ar,
+  name_en: draft.name_en,
   bag_price: Number(draft.bag_price),
   bulk_price: Number(draft.bulk_price),
   market_share: Number(draft.market_share),
