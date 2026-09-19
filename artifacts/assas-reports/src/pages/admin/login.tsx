@@ -21,11 +21,19 @@ export default function AdminLogin() {
       const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
 
-      if (!response.ok) {
+      if (response.status === 401) {
         throw new Error("بيانات الدخول غير صحيحة");
+      }
+
+      if (!response.ok) {
+        throw new Error("تعذر الاتصال بخدمة تسجيل الدخول. يرجى المحاولة لاحقاً أو التواصل مع مسؤول الموقع.");
+      }
+
+      if (!response.headers.get("content-type")?.includes("application/json")) {
+        throw new Error("خدمة تسجيل الدخول غير مهيأة بشكل صحيح. يرجى التواصل مع مسؤول الموقع.");
       }
 
       const payload = (await response.json()) as { token?: string };
@@ -61,6 +69,8 @@ export default function AdminLogin() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               type="email"
+              autoComplete="username"
+              dir="ltr"
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-secondary"
               required
             />
@@ -72,6 +82,8 @@ export default function AdminLogin() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               type="password"
+              autoComplete="current-password"
+              dir="ltr"
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-secondary"
               required
             />

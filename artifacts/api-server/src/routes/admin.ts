@@ -260,16 +260,16 @@ function summarizeChange(before: unknown, after: unknown, action: string) {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body as { email?: string; password?: string };
+    const { email, password } = (req.body ?? {}) as { email?: unknown; password?: unknown };
 
-    if (!email || !password) {
+    if (typeof email !== "string" || !email.trim() || typeof password !== "string" || !password) {
       return res.status(400).json({ error: "Email and password are required." });
     }
 
     const [admin] = await db
       .select()
       .from(schema.adminUsers)
-      .where(eq(schema.adminUsers.email, email))
+      .where(sql`lower(${schema.adminUsers.email}) = ${email.trim().toLowerCase()}`)
       .limit(1);
 
     if (!admin) {
